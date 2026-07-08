@@ -1,0 +1,18 @@
+Commander X16 memory map used by durexForth:
+
+$00 - $01 :: X16 RAM/ROM bank registers (not touched).
+$09 - $40 :: Parameter stack, `lsb` section.
+$41 - $78 :: Parameter stack, `msb` section.
+$8b - $8c :: `w` (work area for code words).
+$8d - $8e :: `w2` (work area for code words).
+$9e - $9f :: `w3` (work area for code words).
+$100 - $1ff :: Return stack.
+$400 - $457 :: `TIB` Text input buffer (golden RAM).
+$480 - $49e :: `find` buffer (golden RAM).
+$500 - $57f :: `pad` scratch pad memory (golden RAM).
+$5c0 - $5fc :: `#>` / number-formatting buffer (golden RAM).
+$801 - here :: Forth kernel followed by code and data space.
+latest - $9eff :: Dictionary. Grows downwards as needed.
+$9f00 - $9fff :: I/O area (VERA, VIA, YM2151, ...).
+$a000 - $bfff :: Banked RAM (unused by the core).
+$c000 - $ffff :: Banked ROM (KERNAL in bank 0).

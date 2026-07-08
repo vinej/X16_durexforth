@@ -1,0 +1,61 @@
+# durexforth (Commander X16 port)
+
+A Commander X16 port of durexForth, a fast, [Forth 2012](http://forth-standard.org/standard/words) core-compatible Forth for 6502-family machines.
+
+This is the **first-version, plain-Forth core**: everything C64-specific has been
+removed, leaving the interpreter/compiler, the 6502/65C02 assembler (`asm`), the
+decompiler (`see`), disk/file words, and standard utility libraries. Hardware
+features (VIC-II graphics, SID/MML sound, sprites, the vi editor) are gone and
+will be re-added on top using X16 facilities (VERA, etc.). Upstream durexForth
+(C64) lives at <https://github.com/jkotlinski/durexforth>.
+
+## Building / running
+
+```
+./build.sh        # assemble with ACME and populate sdcard/sdcard.img
+./build.sh run    # ...and launch the emulator
+```
+
+Requirements (relative to the repo root): `acme/acme.exe`, `emulator/x16emu.exe`
+(+ `rom.bin`), a FAT32 `sdcard/sdcard.img`, and Python 3. On boot the kernel
+(`durexforth.prg`, load address `$0801`) loads `base` from the SD card,
+compiles the core, and saves the turnkey image `durexfth` back to the card.
+durexForth runs in the X16 ISO charset (standard ASCII); source files are kept
+as plain ASCII. See `manual/memmap.adoc` for the X16 memory map.
+
+## Testing
+
+```
+./run-tests.sh    # assemble, boot with a test bootstrap, report PASS/FAIL
+```
+
+This boots the kernel with `base` rewired to `include test` instead of saving,
+runs the Forth 2012 core / core-ext / core-plus / exception conformance suites
+plus `test/testx16.fs` (port-specific: number parsing, the relocated zero-page
+stack, the golden-RAM buffers, and the inline assembler), and checks the
+emulator's echoed output for the pass banner. `test/testsee.fs` is omitted (it
+scrapes VIC-II screen RAM, which the X16 lacks).
+
+### Goals
+
+* Fun. The system should be nice to work with on the real machine.
+* Fast. DurexForth is the <a href=https://theultimatebenchmark.org/>fastest</a> C64 Forth, running at ~50x the speed of Basic V2!
+* Easy to use. Implements the <a href=http://forth-standard.org/standard/words>Forth 2012</a> core standard, learn it with <a href=https://www.forth.com/starting-forth/>Starting Forth</a>!
+
+### Testimonials
+
+<img src=http://i.imgur.com/eXsaXjo.png?1>
+
+[C64 Programming May the Forth be with you Pt 1 - YouTube](https://www.youtube.com/watch?v=TXIDqptXmiM)
+
+[C64 Programming Into the Forth Dimension Pt 2 - YouTube](https://www.youtube.com/watch?v=1oZztCmC8kc)
+
+[A Brief Introduction to DurexForth for the Commodore 64](https://dev.to/ianwitham/a-brief-introduction-to-durexforth-for-the-commodore-64-1c99)
+
+"Just fooling around but Durexforth is fast and fun!" -Kevin Reno
+
+"Ich finde das Forth klein und effektiv, wunderbar." -Peter Bierbach
+
+"Ist eine mächtige Sprache für ein 8-Bitter." -Pebisoft
+
+"The author of durexForth was quite helpful... There is even a vim-like editor, impressive for being on a C64." -Christian Johansson
