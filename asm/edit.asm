@@ -58,6 +58,17 @@ edrest
     ldx #0
     ldy #0
     jsr MOUSE_CONFIG
+    ; The editor can leave stray bytes in the keyboard buffer and a stuck
+    ; modifier; durexForth reads keys with GETIN, so the next REPL line would be
+    ; garbled (-> a ?STACK underflow, and a mangled INCLUDE).  Flush them, and
+    ; default the current device to 8 so INCLUDE / LOADB work after EDIT (BASIC
+    ; sets that on a -prg RUN, but a cart boot doesn't).  ndx/shflag are KERNAL
+    ; vars in banked RAM bank 0, so select bank 0 first.
+    stz $00                     ; RAM bank 0 (CLALL/MOUSE_CONFIG may have changed it)
+    stz $a80a                   ; ndx = 0   (keyboard buffer count)
+    stz $a80c                   ; shflag = 0 (modifier flags)
+    lda #8
+    sta $0292                   ; current device = 8 (SD card)
     plx                         ; restore the Forth stack pointer
     rts
 

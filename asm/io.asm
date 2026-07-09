@@ -134,6 +134,8 @@ REFILL ; ( -- flag )
     beq .return_true
     cmp #K_RETURN
     beq .return_true
+    cmp #$0a           ; LF also ends a line (x16edit saves LF line endings;
+    beq .return_true   ; CR-then-LF just yields a harmless empty line)
     ldy TIB_SIZE
     sta (W),y
     inc TIB_SIZE

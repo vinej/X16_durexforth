@@ -263,14 +263,10 @@ INCLUDED
     ldx	SOURCE_ID_LSB ; file number
     jsr	CHKIN
 
-    ; Skips load address. It is tempting to keep the source
-    ; code as .SEQ files instead of .PRG to avoid this step.
-    ; However, the advantage with .PRG is that loading/saving
-    ; files from text editor can be dramatically speeded up
-    ; by fast loader cartridges such as Retro Replay.
-    JSR CHRIN     ; get a byte from file
-    JSR CHRIN     ; get a byte from file
-
+    ; Read every byte as source - do NOT skip a 2-byte load-address header.
+    ; mkcard prepends $00 $00, but REFILL treats those as (harmless) blank
+    ; lines; files saved by the X16 editor (x16edit) have no header at all, so
+    ; skipping 2 bytes there would eat the first two source characters.
     jsr READST
     beq +
     jsr _errorchread
