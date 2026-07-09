@@ -1,11 +1,15 @@
 === TERMINAL - Terminal I/O ===
 
-EMIT ( c -- ) - output one character. 65 EMIT  ->  A
-CR ( -- ) - output a newline.
-SPACE ( -- ) - output one space.
-SPACES ( n -- ) - output n spaces.
-KEY ( -- c ) - wait for and return one keypress.
-ACCEPT ( addr n -- len ) - read an input line (max n chars) into addr; return
+[x] EMIT ( c -- ) - output one character. 65 EMIT  ->  A
+[x] CR ( -- ) - output a newline.
+[x] SPACE ( -- ) - output one space.
+[x] SPACES ( n -- ) - output n spaces.
+[x] KEY ( -- c ) - wait for and return one keypress.
+[x] ACCEPT ( addr n -- len ) - read an input line (max n chars) into addr; return
     the count.
-.( ( "ccc)" -- ) - print a string immediately, even while interpreting. .(
+[x] .( ( "ccc)" -- ) - print a string immediately, even while interpreting. .(
     hello)
+
+--- durexForth ---
+[x] PAGE ( -- ) - clear the screen and home the cursor.
+[x] RVS ( -- ) - toggle reverse-video text output.

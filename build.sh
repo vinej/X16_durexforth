@@ -12,21 +12,26 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# Tool binaries (override on non-Windows / CI: ACME=acme/acme  EMU=x16emu  MAKECART=makecart)
+ACME="${ACME:-acme/acme.exe}"
+EMU="${EMU:-x16emu.exe}"
+MAKECART="${MAKECART:-makecart.exe}"
+
 PY="${PYTHON:-python}"
-IMG=sdcard/sdcard.img
+IMG=release/sdcard.img
 
 # Source files that make up the plain-Forth core. base.fs is loaded first by
 # the kernel; it in turn includes wordlist/labels/doloop/debug/ls/require/open/
 # accept/asm/turnkey. compat/see/io/dos/rnd/timer are optional libraries.
 SRCS="base wordlist labels doloop debug ls require open accept asm turnkey \
-      compat see io dos rnd timer"
+      compat see io dos rnd timer audio vramdisk"
 
 echo "==> assembling kernel"
 mkdir -p build
 [ -f build/version.asm ] || printf '!pet "durexforth x16"\n' > build/version.asm
-acme/acme.exe -I asm asm/durexforth.asm
-cp durexforth.prg emulator/durexforth.prg
-echo "    durexforth.prg = $(stat -c%s durexforth.prg) bytes"
+"$ACME" -I asm asm/durexforth.asm
+cp build/durexforth.prg emulator/durexforth.prg
+echo "    durexforth.prg = $(stat -c%s build/durexforth.prg) bytes"
 
 echo "==> writing sources to $IMG"
 FILES=""
@@ -35,7 +40,7 @@ for n in $SRCS; do FILES="$FILES forth/$n.fs"; done
 
 if [ "${1:-}" = "run" ]; then
   echo "==> launching x16emu (close the window to exit)"
-  ( cd emulator && ./x16emu.exe -sdcard ../sdcard/sdcard.img \
+  ( cd emulator && "./$EMU" -sdcard ../release/sdcard.img \
         -prg durexforth.prg -run )
 fi
 echo "==> done"

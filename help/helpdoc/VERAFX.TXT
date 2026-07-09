@@ -5,16 +5,15 @@ write cache (fast VRAM fills), transparent writes, and line/polygon/affine
 address helpers.
 
 Built-in native words:
-  DCSEL   ( n -- )          select DCSEL bank 0-63 so the FX registers at
+[x]   DCSEL   ( n -- )          select DCSEL bank 0-63 so the FX registers at
                             $9F29-$9F2C can be reached with C! / C@.
-  FX-MULT ( a b -- lo hi )  signed 16x16 -> 32-bit multiply (result = a double).
+[x]   FX-MULT ( a b -- lo hi )  signed 16x16 -> 32-bit multiply (result = a double).
       1000 1000 FX-MULT SWAP . .  ->  16960 15  (= 1000000)
 
-For more, load the toolkit (HELP requires ASSEMBLER.FTH first):
-  S" ASSEMBLER.FTH" INCLUDED   S" VERAFX.FTH" INCLUDED
-  FX*      ( n1 n2 -- d )                signed multiply -> double
-  FX-FILL  ( byte vbank vaddr count -- ) fast 32-bit-cache VRAM fill (~4x)
-  FX-CLEAR ( vbank vaddr count -- )      zero a VRAM region
-  FX-DCSEL ( n -- ) / FX-OFF ( -- )      low-level plumbing for line/poly/affine
-
-See also the ASMGFX.FTH graphics toolkit, which uses VERA FX for its fills.
+[x]   FX*      ( n1 n2 -- d )                signed multiply -> double (= FX-MULT)
+[x]   FX-FILL  ( byte vbank vaddr count -- ) fast 32-bit-cache VRAM fill (~4x).
+      count need not be a multiple of 4; the 1-3 leftover bytes are written plain.
+[x]   FX-CLEAR ( vbank vaddr count -- )      zero a VRAM region (= 0 FX-FILL)
+[x]   FX-OFF   ( -- )                        turn the FX helpers back off, so plain
+                                             VPOKE works (FX-MULT/FILL do this too).
+      FX-DCSEL: not a separate word - use DCSEL ( n -- ) to pick the FX register bank.

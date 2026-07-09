@@ -1,6 +1,6 @@
 === PAL - VERA palette ===
 
-  PAL!  ( rgb index -- )   set palette entry index (0-255) to a 12-bit $RGB
+[x]   PAL!  ( rgb index -- )   set palette entry index (0-255) to a 12-bit $RGB
                            colour.  $0F00 1 PAL!   makes colour 1 pure red.
 
 VERA has 256 palette entries, each 12-bit ($0RGB: 4 bits red, green, blue).

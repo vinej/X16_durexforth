@@ -8,34 +8,42 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 
+# Tool binaries (override on non-Windows / CI: ACME=acme/acme  EMU=x16emu  MAKECART=makecart)
+ACME="${ACME:-acme/acme.exe}"
+EMU="${EMU:-x16emu.exe}"
+MAKECART="${MAKECART:-makecart.exe}"
+
 PY="${PYTHON:-/c/Users/jyv/AppData/Local/Programs/Python/Python312/python.exe}"
-IMG=sdcard/sdcard.img
+# Work on a throwaway copy of the release card so test files don't dirty it.
+SEED=release/sdcard.img
+IMG=build/testcard.img
 TIMEOUT="${TIMEOUT:-75}"
 
 # Forth core libraries (everything base.fs pulls in), minus base itself.
 FORTH="wordlist labels doloop debug ls require open accept asm turnkey \
-       compat see io dos rnd timer"
+       compat see io dos rnd timer audio vramdisk"
 # Test-suite files.
-TESTS="tester testcore testcoreplus testcoreext testexception testx16 test 1"
+TESTS="tester testcore testcoreplus testcoreext testexception testx16 testvideo testsprite testtile testpalfx testinput testcoreadd testaudio testbank testvramdisk test 1"
 
 echo "==> assembling kernel"
 mkdir -p build
 printf '!text "durexforth x16"\n' > build/version.asm
-acme/acme.exe -I asm asm/durexforth.asm
-cp durexforth.prg emulator/durexforth.prg
+"$ACME" -I asm asm/durexforth.asm
+cp build/durexforth.prg emulator/durexforth.prg
 
 echo "==> building test bootstrap (base -> include test)"
 sed 's/^save-pack durexfth$/include test/' forth/base.fs > build/base.fs
 
-echo "==> writing sources + tests to $IMG"
+echo "==> writing sources + tests to $IMG (copy of $SEED)"
+cp "$SEED" "$IMG"
 FILES="build/base.fs"
 for n in $FORTH; do FILES="$FILES forth/$n.fs"; done
 for n in $TESTS; do FILES="$FILES test/$n.fs"; done
 "$PY" build/mkcard.py "$IMG" $FILES >/dev/null
 
 echo "==> running suite in x16emu (warp, up to ${TIMEOUT}s)"
-OUT=$(cd emulator && MSYS_NO_PATHCONV=1 timeout "$TIMEOUT" ./x16emu.exe \
-        -sdcard ../sdcard/sdcard.img -prg durexforth.prg -run \
+OUT=$(cd emulator && MSYS_NO_PATHCONV=1 timeout "$TIMEOUT" "./$EMU" \
+        -sdcard "../$IMG" -prg durexforth.prg -run \
         -echo -warp </dev/null 2>&1 | tr -d '\r') || true
 
 echo "-------------------- emulator output (tail) --------------------"

@@ -4,23 +4,33 @@ These metaprogramming words (execution tokens, immediate words, POSTPONE,
 MARKER, ...) are explained with examples in the [advanced
     guide](advanceguide.md).
 
-' ( "name" -- xt ) - find a word's execution token. ' DUP EXECUTE
-['] ( "name" -- ) - compile a word's xt (in a definition).
-COMPILE, ( xt -- ) - append a call to xt to the current definition.
-COMPILE ( -- ) - (legacy) compile the following word into the definition.
-[ ( -- ) - switch to interpret state inside a definition (IMMEDIATE).
-] ( -- ) - switch back to compile state.
-LITERAL ( x -- ) - compile x as a literal (IMMEDIATE). [ 2 3 + ] LITERAL
-2LITERAL ( d -- ) - compile a double literal.
-SLITERAL ( addr len -- ) - compile a string literal.
-POSTPONE ( "name" -- ) - compile the compilation behaviour of a word
+[x] ' ( "name" -- xt ) - find a word's execution token. ' DUP EXECUTE
+[x] ['] ( "name" -- ) - compile a word's xt (in a definition).
+[x] COMPILE, ( xt -- ) - append a call to xt to the current definition.
+[ ] COMPILE ( -- ) - (legacy) compile the following word into the definition.
+[x] [ ( -- ) - switch to interpret state inside a definition (IMMEDIATE).
+[x] ] ( -- ) - switch back to compile state.
+[x] LITERAL ( x -- ) - compile x as a literal (IMMEDIATE). [ 2 3 + ] LITERAL
+[x] 2LITERAL ( d -- ) - compile a double literal.
+[ ] SLITERAL ( addr len -- ) - compile a string literal.
+[x] POSTPONE ( "name" -- ) - compile the compilation behaviour of a word
     (IMMEDIATE).
-[COMPILE] ( "name" -- ) - (legacy) force-compile an immediate word.
-IMMEDIATE ( -- ) - mark the most recent definition immediate.
-MARKER ( "name" -- ) - create a word that, when run, forgets everything
+[ ] [COMPILE] ( "name" -- ) - (legacy) force-compile an immediate word.
+[x] IMMEDIATE ( -- ) - mark the most recent definition immediate.
+[x] MARKER ( "name" -- ) - create a word that, when run, forgets everything
     defined after it. MARKER SANDBOX
-FORGET ( "name" -- ) - remove a word and all words defined after it.
->BODY ( xt -- addr ) - data-field address of a CREATEd word.
-?COMP ( -- ) - abort unless currently compiling.
-?STACK ( -- ) - check the data stack for under/overflow.
-," ( "ccc\"" -- ) - compile a counted string into the dictionary.
+[ ] FORGET ( "name" -- ) - remove a word and all words defined after it.
+[x] >BODY ( xt -- addr ) - data-field address of a CREATEd word.
+[ ] ?COMP ( -- ) - abort unless currently compiling.
+[ ] ?STACK ( -- ) - check the data stack for under/overflow.
+[ ] ," ( "ccc\"" -- ) - compile a counted string into the dictionary.
+
+--- durexForth ---
+[x] LATEST ( -- nt ) - name token of the most recently defined word.
+[x] HIDE ( "name" -- ) - remove a word from the dictionary search order.
+[x] SIZE ( "name" -- ) - print the byte length of a word's definition.
+[x] SEE ( "name" -- ) - decompile a word to source-like text (SEE.FTH).
+[x] DOWORDS ( xt -- ) - call xt ( nt -- flag ) for each word; walk the dictionary.
+[x] NAME>STRING ( nt -- caddr u ) - the text of a name token.
+[x] FIND-NAME ( caddr u -- nt | 0 ) - look up a name, returning its name token.
+[x] >XT ( nt -- xt ) - execution token from a name token.

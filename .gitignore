@@ -1,4 +1,41 @@
+# ---------------------------------------------------------------------
+# Bundled third-party tools -- not ours to redistribute.
+#
+# build.ps1 expects both of these to exist. See README.md:
+#   acme/      ACME 0.97   https://sourceforge.net/projects/acme-crossass/
+#   emulator/  x16emu r49  https://github.com/X16Community/x16-emulator
+#              (needs rom.bin from https://github.com/X16Community/x16-rom)
+# ---------------------------------------------------------------------
+acme/
+emulator/
+
+# ---------------------------------------------------------------------
+# Official X16 reference documents -- freely available upstream, kept
+# locally for offline use. The ForthX16 help pages in doc/*.TXT stay.
+# ---------------------------------------------------------------------
+doc/Commander X16 Programmer's Reference Guide.pdf
+doc/X16 Reference - 09 - VERA Programmer's Reference.md
+doc/X16 Reference - 10 - VERA FX Reference.md
+doc/*.pdf
+
 *.d64
 *.prg
-build
+*.crt
+*.nvram
+
+# build/ holds generated outputs (kernel image, card sources, .crt, etc.) but
+# also the build SCRIPTS that build.sh / run-tests.sh call - keep those two.
+build/*
+!build/mkcard.py
+!build/annotate.py
+!build/extract-durexfth.py
 deploy
+
+# release/ holds the published binaries for users who don't rebuild - commit
+# ALL of them (these re-include past the *.prg / *.crt / *.img ignores above),
+# except the stray makecart .nvram files.
+!release/
+!release/*
+release/*.nvram
+
+

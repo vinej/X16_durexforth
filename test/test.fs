@@ -10,13 +10,22 @@
 
 marker ---test---
 
-parse-name compat included
-parse-name tester included
-parse-name testcore included
-parse-name testcoreplus included
-parse-name testcoreext included
-parse-name testexception included
-parse-name testx16 included
+page parse-name compat included
+page parse-name tester included
+page parse-name testcore included
+page parse-name testcoreplus included
+page parse-name testcoreext included
+page parse-name testexception included
+page parse-name testx16 included
+page parse-name testvideo included
+page parse-name testsprite included
+page parse-name testtile included
+page parse-name testpalfx included
+page parse-name testinput included
+page parse-name testcoreadd included
+page parse-name testaudio included
+page parse-name testbank included
+page parse-name testvramdisk included
 
 \ include-mechanism smoke test (loads the file "1")
 :noname s" include 1 2" evaluate
@@ -30,3 +39,8 @@ decimal cr cr
 .( +++ ALL TESTS PASSED +++) cr
 .( ============================) cr
 0 1 s" ok" saveb
+
+\ Stop here instead of dropping into the REPL, so the emulator's -run
+\ autostart keystroke residue is never interpreted (the trailing "ç?").
+: ---halt--- begin again ;
+---halt---

@@ -1,0 +1,79 @@
+name: release
+
+# OPTIONAL EXTRA.  The prebuilt binaries are committed in release/, so users can
+# just download them from the repo - this workflow is not required.  It is a
+# manual-only convenience: run it from the Actions tab to (re)build the binaries
+# on a clean Linux runner and attach them to the GitHub Release for a tag.
+# NOTE: the emulator/ROM download URLs below are unverified - confirm them
+# against the current X16Community release layout before relying on this.
+on:
+  workflow_dispatch:            # manual run only (Actions tab)
+    inputs:
+      tag:
+        description: 'Release tag to attach binaries to (e.g. v1.0.0)'
+        required: true
+
+permissions:
+  contents: write               # create/update the Release and upload assets
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    env:
+      # Make the *.sh build scripts use the Linux tools we set up below.
+      ACME: acme/acme
+      EMU: x16emu
+      MAKECART: makecart
+      PYTHON: python3
+      # Pin the emulator/ROM release that matches the code (KERNAL R49).
+      X16_VER: r49
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential libsdl2-2.0-0 xvfb curl unzip
+
+      - name: Build the ACME assembler
+        run: |
+          git clone --depth 1 https://github.com/meonwax/acme.git acme-src
+          make -C acme-src/src
+          mkdir -p acme
+          cp acme-src/src/acme acme/acme
+
+      - name: Fetch x16 emulator + ROM
+        run: |
+          mkdir -p emulator
+          # NOTE: verify the asset name matches the X16Community release layout.
+          EMU_URL="https://github.com/X16Community/x16-emulator/releases/download/${X16_VER}/x16emu_linux-x86_64.zip"
+          curl -fL -o x16emu.zip "$EMU_URL"
+          unzip -o x16emu.zip -d emu_dl
+          # Flatten whatever layout the zip has into emulator/
+          find emu_dl -name x16emu    -exec cp {} emulator/x16emu    \; || true
+          find emu_dl -name makecart  -exec cp {} emulator/makecart  \; || true
+          find emu_dl -name rom.bin   -exec cp {} emulator/rom.bin   \; || true
+          # If the emulator zip didn't bundle a ROM, grab it from x16-rom.
+          if [ ! -f emulator/rom.bin ]; then
+            ROM_URL="https://github.com/X16Community/x16-rom/releases/download/${X16_VER}/rom.bin"
+            curl -fL -o emulator/rom.bin "$ROM_URL"
+          fi
+          chmod +x emulator/x16emu emulator/makecart
+          ls -l emulator/
+
+      - name: Build release binaries
+        run: xvfb-run -a ./make-release.sh
+
+      - name: Show what we built
+        run: ls -l release/
+
+      - name: Attach binaries to the Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ inputs.tag }}
+          fail_on_unmatched_files: true
+          files: |
+            release/durexforth_full.crt
+            release/durexforth.crt
+            release/durexforth.prg
+            release/sdcard.img

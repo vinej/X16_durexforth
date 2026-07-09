@@ -3,7 +3,7 @@
 ; ACME assembler
 
 !cpu 65c02	; Commander X16 (WDC 65C02)
-!to "durexforth.prg", cbm	; set output file and format
+!to "build/durexforth.prg", cbm	; set output file and format
 ; No !ct: text/char literals stay ASCII, matching the X16 ISO charset
 ; (enabled at boot). Control codes ($93 clear, $0d cr, $12 rvs) still work.
 
@@ -135,6 +135,9 @@ ZERO
 ONE
     +VALUE 1
 
+    +BACKLINK "2", 1
+    +VALUE 2
+
     +BACKLINK "-1", 2
 MINUS_ONE
     lda	#-1
@@ -162,6 +165,18 @@ MINUS_ONE
 !src "disk.asm"
 !src "exception.asm"
 !src "format.asm"
+!src "video.asm"
+!src "sprite.asm"
+!src "tile.asm"
+!src "palfx.asm"
+!src "input.asm"
+!src "farcall.asm"
+!src "coreadd.asm"
+!src "clock.asm"
+!src "bank.asm"
+!src "rstack.asm"
+!src "sysx.asm"
+!src "edit.asm"
 
 BOOT_STRING
 !src "../build/version.asm"

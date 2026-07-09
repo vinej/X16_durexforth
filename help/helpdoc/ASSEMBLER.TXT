@@ -15,3 +15,18 @@ Structured flow (comma!): BEGIN, UNTIL, IF, ELSE, THEN, with condition
 prefixes BEQ: BNE: BCC: BCS: BMI: BPL: BVC: BVS: (named for the branch taken).
 Registers: DTOP (TOS), N (scratch), POP/PUSH (pop/push a cell in A=lo X=hi),
 NEXT (end each word with NEXT JMP,). Full detail: user guide Section 6.
+
+--- durexForth inline assembler (asm.fs, always present) ---
+durexForth's own assembler is mnemonic-first with a trailing comma and the
+operand pushed before it: e.g.  $d020 lda,x  =  LDA $d020,X . It provides the
+full 6502 mnemonic set as words - lda, sta, ldx, cmp, jsr, jmp, rts, inx, ...
+each with addressing-mode suffixes:  ,#  (immediate)  ,x  ,y  (indexed)
+,(x) ,(y) (indirect indexed)  ,a (accumulator).  Local branches use the
+labels helper (labels.fs).
+[x] CODE ( "name" -- ) - begin a machine-code word; assemble opcodes until END-CODE.
+[x] END-CODE ( -- ) - finish a CODE word.
+[x] W ( -- addr ) - scratch work area 1 (2 bytes) for code words.
+[x] W2 ( -- addr ) - scratch work area 2.
+[x] W3 ( -- addr ) - scratch work area 3.
+[x] LSB ( -- addr ) - zeropage base of the parameter-stack low-byte array (index with ,x).
+[x] MSB ( -- addr ) - zeropage base of the parameter-stack high-byte array.

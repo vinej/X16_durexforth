@@ -22,7 +22,8 @@ cmove_getparams:
 	sta	SRC + 1
 	rts
 
-CMOVE_BACK
+    +BACKLINK "cmove>", 6
+CMOVE_BACK ; ( src dst u -- ) copy u bytes, high addresses first (overlap-safe up)
 	txa
 	pha
 	jsr cmove_getparams
@@ -71,7 +72,8 @@ CMOVE_BACK
     bne .initbase
 	jmp cmove_done
 
-CMOVE
+    +BACKLINK "cmove", 5
+CMOVE ; ( src dst u -- ) copy u bytes, low addresses first
     txa
     pha
 	jsr cmove_getparams

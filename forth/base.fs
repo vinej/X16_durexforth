@@ -1,4 +1,6 @@
 : 2+ 1+ 1+ ;
+: 2! swap over ! 2+ ! ;
+: 2@ dup 2+ @ swap @ ;
 : jmp, 4c c, ;
 : postpone bl word dup find ?dup 0= if
 count notfound then
@@ -35,9 +37,14 @@ r> 1+ count 2dup + 1- >r ;
 
 ( "0 to foo" sets value foo to 0 )
 : (to) >r split r@ 2+ c! r> c! ;
-: to ' 1+ state c@ if
-postpone literal postpone (to) exit
-then (to) ; immediate
+\ TO on a VALUE - code word, first byte $a9 - patches its immediates.
+\ TO on a 2VALUE - create/does> word, first byte $20 - stores the double
+\ at the data field xt+5 with 2!.
+: to ' dup c@ $20 = if
+5 + state c@ if postpone literal postpone 2! exit then 2!
+else
+1+ state c@ if postpone literal postpone (to) exit then (to)
+then ; immediate
 
 : allot ( n -- ) here + to here ;
 
@@ -73,6 +80,8 @@ header postpone dodoes literal , ;
 parse-name asm included
 
 : -rot rot rot ;
+: roll ( xu..x0 u -- x{u-1}..x0 xu )
+?dup if swap >r 1- recurse r> swap then ;
 
 ( creates value that is fast to read
   but can only be rewritten by "to".
@@ -101,6 +110,10 @@ begin ?dup while space 1- repeat ;
 : 2drop ( a b -- )
 postpone drop postpone drop ; immediate
 
+: unused ( -- u ) latest here - $20 - ;
+: blank ( addr u -- ) bl fill ;
+: reset ( -- ) $42 2 0 i2cpoke ;          \ SMC reset (does not return)
+: poweroff ( -- ) $42 1 0 i2cpoke ;       \ SMC power-off
 
 : save-forth ( strptr strlen -- )
 801 $9f00 d word count saveb ;
@@ -132,12 +145,76 @@ latest >xt jmp,
 here latest >xt 1+ (to)
 2 allot ;
 
+( double / buffer defining words - DEFINING.TXT )
+: 2variable ( "name" -- ) variable 2 allot ;
+: buffer: ( n "name" -- ) create allot ;
+: 2constant ( d "name" -- ) create , , does> 2@ ;
+: 2value ( d "name" -- ) create , , does> 2@ ;
+: 2literal ( d -- ) swap postpone literal postpone literal ; immediate
+
 ( from FIG UK... )
 : / /mod nip ;
 : mod /mod drop ;
 : */mod >r m* r> fm/mod ;
 : */ */mod nip ;
 ( ...from FIG UK )
+
+( double-cell numbers - DOUBLE.TXT. core so DOUBLE works without compat. )
+code 2over ( a b c d -- a b c d a b )
+dex,
+msb 4 + lda,x msb sta,x
+lsb 4 + lda,x lsb sta,x
+dex,
+msb 4 + lda,x msb sta,x
+lsb 4 + lda,x lsb sta,x rts, end-code
+code 2swap ( a b c d -- c d a b )
+lsb lda,x lsb 2+ ldy,x
+lsb sty,x lsb 2+ sta,x
+msb lda,x msb 2+ ldy,x
+msb sty,x msb 2+ sta,x
+lsb 1+ lda,x lsb 3 + ldy,x
+lsb 1+ sty,x lsb 3 + sta,x
+msb 1+ lda,x msb 3 + ldy,x
+msb 1+ sty,x msb 3 + sta,x rts, end-code
+code d+ ( d1 d2 -- d3 )
+clc,
+lsb 1+ lda,x lsb 3 + adc,x lsb 3 + sta,x
+msb 1+ lda,x msb 3 + adc,x msb 3 + sta,x
+lsb lda,x lsb 2+ adc,x lsb 2+ sta,x
+msb lda,x msb 2+ adc,x msb 2+ sta,x
+inx, inx, rts, end-code
+: ?dnegate 0< if dnegate then ;
+: dabs dup ?dnegate ;
+: d>s ( d -- n ) drop ;
+: d- ( d1 d2 -- d3 ) dnegate d+ ;
+: d2* ( d -- 2d ) 2dup d+ ;
+: d2/ ( d -- d/2 ) dup >r 2/ swap 1 rshift r> 1 and 15 lshift or swap ;
+: d0= ( d -- flag ) or 0= ;
+: d0< ( d -- flag ) nip 0< ;
+: d= ( d1 d2 -- flag ) d- d0= ;
+: d< ( d1 d2 -- flag ) rot 2dup = if 2drop u< else 2swap 2drop swap < then ;
+: du< ( ud1 ud2 -- flag ) rot 2dup = if 2drop u< else 2swap 2drop swap u< then ;
+: dmax ( d1 d2 -- d ) 2over 2over d< if 2swap then 2drop ;
+: dmin ( d1 d2 -- d ) 2over 2over d< 0= if 2swap then 2drop ;
+: d. ( d -- ) tuck dabs <# #s rot sign #> type space ;
+
+( mixed / triple-precision multiply-divide - ARITHMETIC.TXT )
+: ud* ( ud u -- ud ) tuck * >r um* r> + ;
+: ut* ( lo hi u -- t0 t1 t2 )            \ unsigned double * single -> triple
+swap over um* 2swap um* >r -rot r> 0 2swap d+ ;
+: ut/ ( t0 t1 t2 u -- q0 q1 )            \ unsigned triple / single -> double
+>r r@ um/mod -rot r> um/mod nip swap ;
+: m*/ ( d n1 n2 -- d )                   \ d*n1/n2, triple intermediate (truncates)
+dup 2 pick xor 3 pick xor >r             \ combined sign -> R
+abs >r abs >r dabs                       \ |n2| |n1| on R, |d| on stack
+r> ut* r> ut/ r> ?dnegate ;
+
+( number output: right-justified fields + helpers - NUMERIC.TXT )
+: holds ( addr u -- ) begin dup while 1- 2dup + c@ hold repeat 2drop ;
+: d.r ( d w -- ) >r tuck dabs <# #s rot sign #> r> over - 0 max spaces type ;
+: .r ( n w -- ) >r s>d r> d.r ;
+: u.r ( u w -- ) >r 0 <# #s #> r> over - 0 max spaces type ;
+: ? ( addr -- ) @ . ;
 
 : .s depth begin ?dup while
 dup pick . 1- repeat ;
