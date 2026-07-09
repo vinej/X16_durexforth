@@ -24,7 +24,7 @@ mkdir -p build
 
 # Core forth libs base.fs pulls in, plus (for 'full') the optional feature libs.
 CORE="wordlist labels doloop debug ls require open accept asm turnkey"
-OPT="compat see io dos rnd timer audio vramdisk"
+OPT="compat see io dos rnd timer audio loadsave vramdisk"
 
 echo "==> assembling kernel + boot stub"
 printf '!text "durexforth x16"\n' > build/version.asm
@@ -35,7 +35,7 @@ cp build/durexforth.prg emulator/durexforth.prg
 # Bake extra libs into the saved image for a 'full' cart by inserting includes
 # right before base.fs's save-pack step.
 if [ "$MODE" = "full" ]; then
-  BAKE='include compat\ninclude io\ninclude dos\ninclude rnd\ninclude timer\ninclude audio\ninclude vramdisk\n'
+  BAKE='include compat\ninclude io\ninclude dos\ninclude rnd\ninclude timer\ninclude audio\ninclude loadsave\ninclude vramdisk\n'
   sed "s/^\.( save new durexforth\.\.)/${BAKE}.( save new durexforth..)/" forth/base.fs > build/base.fs
   OUTNAME=durexforth_full.crt
 else

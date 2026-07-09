@@ -17,8 +17,8 @@ $ACME = ".\acme\acme.exe"
 $SEED = "release\sdcard.img"          # committed FAT32 card, used as a seed
 $IMG  = "build\testcard.img"          # throwaway copy so tests don't dirty it
 
-$FORTH = "wordlist labels doloop debug ls require open accept asm turnkey compat see io dos rnd timer audio vramdisk".Split(' ')
-$TESTS = "tester testcore testcoreplus testcoreext testexception testx16 testvideo testsprite testtile testpalfx testinput testcoreadd testaudio testbank testvramdisk test 1".Split(' ')
+$FORTH = "wordlist labels doloop debug ls require open accept asm turnkey compat see io dos rnd timer audio loadsave vramdisk".Split(' ')
+$TESTS = "tester testcore testcoreplus testcoreext testexception testx16 testvideo testsprite testtile testpalfx testinput testcoreadd testaudio testbank testvramdisk testloadsave test 1".Split(' ')
 
 New-Item -ItemType Directory -Force build | Out-Null
 

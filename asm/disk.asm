@@ -194,6 +194,82 @@ save_binary_srange_end_hi = *+1
     inx
     rts
 
+; (KLOAD) ( nameptr namelen sec a addr -- endaddr )  general KERNAL LOAD.
+;   sec = SETLFS secondary: 0 = relocate to 'addr' (skip 2-byte PRG header),
+;         1 = load to the file's own header address ('addr' ignored),
+;         2 = headerless (load every byte to 'addr').
+;   a   = LOAD mode: 0 = RAM, 1 = verify vs memory, 2 = VRAM bank 0, 3 = VRAM bank 1.
+;   Returns end address+1, or 0 on a device error OR (verify mode) a mismatch.
+;   Restores the current logical file so it is safe to call while INCLUDE is
+;   reading source.  This is the primitive forth/loadsave.fs builds on.
+    +BACKLINK "(kload)", 7
+KLOAD
+    txa
+    pha                 ; save forth stack pointer (kernal calls clobber x/zp)
+    lda LA
+    pha                 ; save current logical file (for INCLUDE's source channel)
+
+    lda LSB, x
+    sta .kl_addr_lo
+    lda MSB, x
+    sta .kl_addr_hi
+    lda LSB+1, x
+    sta .kl_mode
+    lda LSB+2, x
+    sta .kl_sa
+
+    lda LSB+3, x        ; filename length
+    pha
+    ldy MSB+4, x        ; >filename
+    lda LSB+4, x        ; <filename
+    tax
+    pla
+    jsr SETNAM
+
+    lda #1              ; logical file #1
+    ldx FA              ; current device
+.kl_sa = *+1
+    ldy #0              ; secondary address (patched)
+    jsr SETLFS
+
+.kl_addr_lo = *+1
+    ldx #0
+.kl_addr_hi = *+1
+    ldy #0              ; x/y = load / vram address (patched)
+.kl_mode = *+1
+    lda #0              ; mode (patched)
+    jsr LOAD
+    bcs .kl_fail        ; carry = device / file error
+
+    stx .kl_end
+    sty .kl_end+1
+    lda .kl_mode
+    cmp #1              ; verify mode? then a $10 status bit means "mismatch"
+    bne .kl_done
+    jsr READST
+    and #$10
+    beq .kl_done
+.kl_fail
+    lda #0
+    sta .kl_end
+    sta .kl_end+1
+.kl_done
+    pla
+    tax
+    jsr CHKIN           ; restore previous logical file (ignore result, as loadb)
+    pla
+    tax                 ; restore forth stack pointer
+    inx
+    inx
+    inx
+    inx                 ; 5 args -> 1 result
+    lda .kl_end
+    sta LSB, x
+    lda .kl_end+1
+    sta MSB, x
+    rts
+.kl_end !byte 0, 0
+
     +BACKLINK "included", 8
 INCLUDED
     lda	LSB, x

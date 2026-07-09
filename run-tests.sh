@@ -21,9 +21,9 @@ TIMEOUT="${TIMEOUT:-75}"
 
 # Forth core libraries (everything base.fs pulls in), minus base itself.
 FORTH="wordlist labels doloop debug ls require open accept asm turnkey \
-       compat see io dos rnd timer audio vramdisk"
+       compat see io dos rnd timer audio loadsave vramdisk"
 # Test-suite files.
-TESTS="tester testcore testcoreplus testcoreext testexception testx16 testvideo testsprite testtile testpalfx testinput testcoreadd testaudio testbank testvramdisk test 1"
+TESTS="tester testcore testcoreplus testcoreext testexception testx16 testvideo testsprite testtile testpalfx testinput testcoreadd testaudio testbank testvramdisk testloadsave test 1"
 
 echo "==> assembling kernel"
 mkdir -p build

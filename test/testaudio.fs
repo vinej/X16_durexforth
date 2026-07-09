@@ -44,6 +44,7 @@ s" ceg" 0 fmplay
 s" ceg" 1 psgplay
 s" ceg" 0 fmchord
 s" ceg" 1 psgchord
+psginit fminit                     \ silence every voice the chords left sounding
 
 cr .( testaudio ok ) cr
 

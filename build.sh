@@ -24,7 +24,7 @@ IMG=release/sdcard.img
 # the kernel; it in turn includes wordlist/labels/doloop/debug/ls/require/open/
 # accept/asm/turnkey. compat/see/io/dos/rnd/timer are optional libraries.
 SRCS="base wordlist labels doloop debug ls require open accept asm turnkey \
-      compat see io dos rnd timer audio vramdisk"
+      compat see io dos rnd timer audio loadsave vramdisk"
 
 echo "==> assembling kernel"
 mkdir -p build

@@ -28,7 +28,7 @@ $MAKECART = "makecart.exe"         # invoked from emulator\
 $IMG      = "release\sdcard.img"
 
 $CORE = @("wordlist","labels","doloop","debug","ls","require","open","accept","asm","turnkey")
-$OPT  = @("compat","see","io","dos","rnd","timer","audio","vramdisk")
+$OPT  = @("compat","see","io","dos","rnd","timer","audio","loadsave","vramdisk")
 
 New-Item -ItemType Directory -Force build, release | Out-Null
 
@@ -68,7 +68,7 @@ function Build-Cart([string]$Mode) {
     Invoke-Native $ACME @("asm\cartboot.asm")
 
     if ($Mode -eq 'full') {
-        $bake = "include compat`ninclude io`ninclude dos`ninclude rnd`ninclude timer`ninclude audio`ninclude vramdisk`n"
+        $bake = "include compat`ninclude io`ninclude dos`ninclude rnd`ninclude timer`ninclude audio`ninclude loadsave`ninclude vramdisk`n"
         $base = (Get-Content forth\base.fs -Raw) -replace "(?m)^\.\( save new durexforth\.\.\)", ($bake + ".( save new durexforth..)")
         [System.IO.File]::WriteAllText("$PSScriptRoot\build\base.fs", $base)
         $out = "durexforth_full.crt"
