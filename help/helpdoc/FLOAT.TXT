@@ -1,34 +1,42 @@
-=== FLOAT - Floating point (toolkit) ===
+=== FLOAT - Floating point (on-demand module) ===
 
-Floats live on a separate FP stack ( F: ... ), stored as 5-byte values.
-NOT baked in: INCLUDE ASSEMBLER.FTH then FLOAT.FTH (base words below), then
-FPX.FTH for the extended set. Float literals (1.5, -2.5E-2) then work too.
+Floats live on a separate FP stack ( F: ... ), stored as 5-byte MFLPT values
+(~9 digits), computed by the X16 ROM Math Library (bank 4 jump table).
+Cart: NEEDS FLOAT (then NEEDS FLOATX for the extended set).
+SD card: INCLUDE FLOAT (then INCLUDE FLOATX).
+After loading, float literals (1.5, -2.5E-2, 1E6) work in the interpreter
+and compile inside definitions.
+Domain errors (F/ by zero, FLN of a negative) are not trapped - avoid them.
 
-[ ] S>F    ( n -- ) ( F: -- r )   signed integer -> float.  5 S>F F. -> 5
-[ ] F>S    ( -- n ) ( F: r -- )   (non-negative) float -> integer.
-[ ] >FLOAT ( c-addr u -- flag )   parse a string to a float.  S" 3.14" >FLOAT
-F@ F!  ( f-addr -- )          fetch / store a 5-byte float in memory.
-F+ F- F* F/  ( F: a b -- c )  add / subtract / multiply / divide.
-[ ] FSQRT  ( F: r -- sqrt )       square root.
-FNEGATE FABS ( F: r -- r' )   negate / absolute value.
-FPOW  F**  ( F: x y -- x^y )  power via exp(y*ln x), x>0.  2 S>F 10 S>F FPOW
-FMAX FMIN ( F: a b -- r )     larger / smaller of two floats.
-FSIN FCOS FTAN ( F: r -- r' ) trig (radians).
-[ ] FATAN  ( F: r -- atan )       arctangent.
-FLN FEXP ( F: r -- r' )       natural log / exponential.
-F0= F0< F< ( -- flag )        compare:  r=0,  r<0,  r1<r2.
-FDROP FDUP FSWAP FOVER        float-stack shuffles.
-[ ] F.     ( F: r -- )            print top float.  2 S>F FSQRT F. -> 1.41421356
-FVARIABLE FCONSTANT           create a float variable / constant (5 bytes).
-[ ] ISQRT  ( u -- m )             integer floor sqrt, native (no FP-stack use).
-[ ] >FLOAT-VEC ( -- addr )        the >FLOAT hook cell (FPHOOK sets it; advanced).
+[x] S>F    ( n -- ) ( F: -- r )   signed integer -> float.  5 S>F F. -> 5
+[x] F>S    ( -- n ) ( F: r -- )   (non-negative) float -> integer.
+[x] >FLOAT ( c-addr u -- flag )   parse a string to a float.  S" 3.14" >FLOAT
+[x] F@ F!  ( f-addr -- )          fetch / store a 5-byte float in memory.
+[x] F+ F- F* F/  ( F: a b -- c )  add / subtract / multiply / divide.
+[x] FSQRT  ( F: r -- sqrt )       square root.
+[x] FNEGATE FABS ( F: r -- r' )   negate / absolute value.
+[x] FPOW  F**  ( F: x y -- x^y )  power via exp(y*ln x), x>0.  2 S>F 10 S>F FPOW
+[x] FMAX FMIN ( F: a b -- r )     larger / smaller of two floats.
+[x] FSIN FCOS FTAN ( F: r -- r' ) trig (radians).
+[x] FATAN  ( F: r -- atan )       arctangent.
+[x] FLN FEXP ( F: r -- r' )       natural log / exponential.
+[x] F0= F0< F< ( -- flag )        compare:  r=0,  r<0,  r1<r2.
+[x] FDROP FDUP FSWAP FOVER FNIP   float-stack shuffles.
+[x] FDEPTH ( -- n )  FCLEAR ( -- ) float-stack depth / reset.
+[x] F.     ( F: r -- )            print top float.  2 S>F FSQRT F. -> 1.41421356
+[x] FVARIABLE FCONSTANT           create a float variable / constant (5 bytes).
+[x] FLITERAL ( F: r -- )          compile the top float as an inline literal.
+[x] ISQRT  ( u -- m )             integer floor sqrt (no FP-stack use).
+[x] 'NOTFOUND ( -- addr )         CORE: the interpreter's not-found hook cell;
+    FLOAT points it at its literal parser (restore the old value before
+    FORGETting the float words).
 
-FPX.FTH extended set (INCLUDE after FLOAT.FTH):
- FPI FPI2 FLN10               constants pi, pi/2, ln 10.
- FLOAT+ FLOATS FALIGN FALIGNED  sizing for 5-byte floats.
- FROT FSINCOS                 float ROT / sin+cos at once.
- FLOG FALOG FLNP1 FEXPM1      log10, 10^r, ln(1+r), e^r-1.
- FSINH FCOSH FTANH            hyperbolic.
- FASIN FACOS FATAN2           inverse trig (FATAN2 = full-quadrant y x).
-[ ]  F~     ( F: a b tol -- ) ( -- flag )   approximate compare.
- SQR SIN COS TAN ATN LOG EXP  BASIC math aliases (= FSQRT FSIN FCOS ...).
+FLOATX extended set (NEEDS FLOATX after FLOAT):
+[x] FPI FPI2 FLN10               constants pi, pi/2, ln 10.
+[x] FLOAT+ FLOATS FALIGN FALIGNED  sizing for 5-byte floats.
+[x] FROT FSINCOS                 float ROT / sin+cos at once.
+[x] FLOG FALOG FLNP1 FEXPM1      log10, 10^r, ln(1+r), e^r-1.
+[x] FSINH FCOSH FTANH            hyperbolic.
+[x] FASIN FACOS FATAN2           inverse trig (FATAN2 = full-quadrant y x).
+[x] F~     ( F: a b tol -- ) ( -- flag )   approximate compare.
+[x] SQR SIN COS TAN ATN LOG EXP  BASIC math aliases (= FSQRT FSIN FCOS ...).

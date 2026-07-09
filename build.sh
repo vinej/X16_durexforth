@@ -24,7 +24,7 @@ IMG=release/sdcard.img
 # the kernel; it in turn includes wordlist/labels/doloop/debug/ls/require/open/
 # accept/asm/turnkey. compat/see/io/dos/rnd/timer are optional libraries.
 SRCS="base wordlist labels doloop debug ls require open accept asm turnkey \
-      compat see io dos rnd timer audio loadsave vramdisk"
+      compat see io dos rnd timer audio loadsave vramdisk romdisk"
 
 echo "==> assembling kernel"
 mkdir -p build
@@ -36,6 +36,7 @@ echo "    durexforth.prg = $(stat -c%s build/durexforth.prg) bytes"
 echo "==> writing sources to $IMG"
 FILES=""
 for n in $SRCS; do FILES="$FILES forth/$n.fs"; done
+FILES="$FILES forth/mod/graphic.fs forth/mod/float.fs forth/mod/floatx.fs"  # modules also usable via INCLUDE
 "$PY" build/mkcard.py "$IMG" $FILES
 
 if [ "${1:-}" = "run" ]; then

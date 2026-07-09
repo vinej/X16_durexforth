@@ -17,8 +17,9 @@ $ACME = ".\acme\acme.exe"
 $SEED = "release\sdcard.img"          # committed FAT32 card, used as a seed
 $IMG  = "build\testcard.img"          # throwaway copy so tests don't dirty it
 
-$FORTH = "wordlist labels doloop debug ls require open accept asm turnkey compat see io dos rnd timer audio loadsave vramdisk".Split(' ')
-$TESTS = "tester testcore testcoreplus testcoreext testexception testx16 testvideo testsprite testtile testpalfx testinput testcoreadd testaudio testbank testvramdisk testloadsave test 1".Split(' ')
+$FORTH = "wordlist labels doloop debug ls require open accept asm turnkey compat see io dos rnd timer audio loadsave vramdisk romdisk".Split(' ')
+$MODS  = @("graphic","float","floatx")   # forth\mod\ modules: on card + modcart (NEEDS)
+$TESTS = "tester testcore testcoreplus testcoreext testexception testx16 testvideo testsprite testtile testpalfx testinput testcoreadd testaudio testbank testvramdisk testloadsave testgraphic testromdisk testfloat test 1".Split(' ')
 
 New-Item -ItemType Directory -Force build | Out-Null
 
@@ -33,8 +34,22 @@ $base = (Get-Content forth\base.fs -Raw) -replace "(?m)^save-pack durexfth$", "i
 
 Write-Host "==> writing sources + tests to $IMG (copy of $SEED)"
 Copy-Item $SEED $IMG -Force
-$files = @("build\base.fs") + ($FORTH | ForEach-Object { "forth\$_.fs" }) + ($TESTS | ForEach-Object { "test\$_.fs" })
+$files = @("build\base.fs") + ($FORTH | ForEach-Object { "forth\$_.fs" }) + ($MODS | ForEach-Object { "forth\mod\$_.fs" }) + ($TESTS | ForEach-Object { "test\$_.fs" })
 & $Python build\mkcard.py $IMG @files | Out-Null; if ($LASTEXITCODE) { throw "mkcard failed" }
+
+Write-Host "==> packing module cart (ROM bank 40, non-bootable) for the NEEDS test"
+& $Python build\mkmods.py build\mods.bin @($MODS | ForEach-Object { "forth\mod\$_.fs" })
+if ($LASTEXITCODE) { throw "mkmods failed" }
+# zero-pad banks 32..39 so the store sits at bank 40; no CX16 sig -> won't boot
+$pad = New-Object byte[] 131072
+$mods = [System.IO.File]::ReadAllBytes("$PSScriptRoot\build\mods.bin")
+$all = New-Object byte[] ($pad.Length + $mods.Length)
+[Array]::Copy($mods, 0, $all, $pad.Length, $mods.Length)
+[System.IO.File]::WriteAllBytes("$PSScriptRoot\build\modpad.bin", $all)
+Push-Location emulator
+& ".\makecart.exe" -desc "durexForth modules" -author "durexForth" -version test -fill 0 -rom_file 32 ..\build\modpad.bin -o ..\build\modcart.crt
+if ($LASTEXITCODE) { Pop-Location; throw "makecart failed" }
+Pop-Location
 
 Write-Host "==> running suite in x16emu (warp, up to $TimeoutSeconds s)"
 # A normal (non-minimized) window is required - x16emu's -run keystroke
@@ -44,7 +59,7 @@ $log = "build\test.log"
 Remove-Item $log -ErrorAction SilentlyContinue
 $p = Start-Process -FilePath (Join-Path $emuDir "x16emu.exe") -WorkingDirectory $emuDir -PassThru `
      -RedirectStandardOutput $log `
-     -ArgumentList @("-sdcard","..\build\testcard.img","-prg","durexforth.prg","-run","-echo","-warp")
+     -ArgumentList @("-sdcard","..\build\testcard.img","-prg","durexforth.prg","-run","-cart","..\build\modcart.crt","-echo","-warp")
 $deadline = (Get-Date).AddSeconds($TimeoutSeconds)
 while ((Get-Date) -lt $deadline) {
     Start-Sleep -Milliseconds 500

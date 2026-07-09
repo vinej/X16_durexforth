@@ -178,6 +178,7 @@ MINUS_ONE
 !src "coreadd.asm"
 !src "clock.asm"
 !src "bank.asm"
+!src "romdisk.asm"
 !src "rstack.asm"
 !src "sysx.asm"
 !src "edit.asm"

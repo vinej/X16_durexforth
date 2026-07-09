@@ -156,7 +156,15 @@ INTERPRET
     jsr READ_NUMBER
     beq .was_number
 
-    jmp print_word_not_found_error
+    ; Not a word, not a number: through the hookable not-found vector
+    ; ( caddr u ) - default = the error below.  A handler (e.g. the FLOAT
+    ; module's float-literal parser) either consumes caddr/u and returns
+    ; like a word, or chains to NOTFOUND.  Get the cell with 'NOTFOUND.
+    ; Like the number path above, suppress tail-call elimination when the
+    ; handler compiles an inline literal (jsr + data bytes).
+    lda STATE
+    sta curr_word_no_tail_call_elimination
+    jmp (NOTFOUND_VEC)
 
     ; yep, it's a number...
 .was_number
@@ -204,6 +212,17 @@ print_word_not_found_error ; ( caddr u -- )
     jsr PUTCHR
     lda #-13 ; undefined word
     jmp throw_a
+
+NOTFOUND_VEC ; interpreter not-found hook (RAM cell, see INTERPRET)
+    !word print_word_not_found_error
+
+    +BACKLINK "'notfound", 9
+    dex
+    lda #<NOTFOUND_VEC
+    sta LSB, x
+    lda #>NOTFOUND_VEC
+    sta MSB, x
+    rts
 
     +BACKLINK "'", 1
     jsr PARSE_NAME

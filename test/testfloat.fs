@@ -1,0 +1,92 @@
+\ FLOAT + FLOATX module tests. Requires tester.fs.
+\ Exact checks use integer round-trips (F>S); transcendentals use F~ with a
+\ small tolerance. The 'NOTFOUND hook is restored before the marker forgets
+\ the float words (else later unknown words would jump into freed memory).
+
+marker ---testfloat---
+'notfound @ constant nf0          \ original not-found handler, restored below
+
+include float
+include floatx
+
+decimal
+
+\ tolerance for approximate compares: 1/10000
+: ftol ( F: -- r ) 1 s>f 10000 s>f f/ ;
+
+cr .( testfloat: int conversion + arithmetic ) cr
+T{ 5 s>f f>s -> 5 }T
+T{ 1000 s>f f>s -> 1000 }T
+T{ 2 s>f 3 s>f f+ f>s -> 5 }T
+T{ 7 s>f 3 s>f f- f>s -> 4 }T
+T{ 2 s>f 3 s>f f* f>s -> 6 }T
+T{ 6 s>f 2 s>f f/ f>s -> 3 }T
+T{ fdepth -> 0 }T
+
+cr .( testfloat: stack ops ) cr
+T{ 1 s>f 2 s>f fswap f>s f>s -> 1 2 }T
+T{ 1 s>f 2 s>f fover f>s f>s f>s -> 1 2 1 }T
+T{ 1 s>f 2 s>f fdup f>s f>s f>s -> 2 2 1 }T
+T{ 1 s>f 2 s>f fnip f>s fdepth -> 2 0 }T
+T{ 1 s>f 2 s>f 3 s>f frot f>s f>s f>s -> 1 3 2 }T
+
+cr .( testfloat: sign, compare ) cr
+T{ 5 s>f fnegate f0< -> -1 }T
+T{ 5 s>f f0< -> 0 }T
+T{ 0 s>f f0= -> -1 }T
+T{ 3 s>f f0= -> 0 }T
+T{ 2 s>f 3 s>f f< -> -1 }T
+T{ 3 s>f 2 s>f f< -> 0 }T
+T{ -5 s>f fabs f>s -> 5 }T
+T{ 2 s>f 3 s>f fmax f>s -> 3 }T
+T{ 2 s>f 3 s>f fmin f>s -> 2 }T
+
+cr .( testfloat: memory, defining words ) cr
+fvariable fv1
+T{ 42 s>f fv1 f! fv1 f@ f>s -> 42 }T
+7 s>f fconstant fc7
+T{ fc7 f>s -> 7 }T
+
+cr .( testfloat: >FLOAT parsing ) cr
+T{ s" 3" >float -> -1 }T      T{ f>s -> 3 }T
+T{ s" 2.5" >float -> -1 }T    T{ 4 s>f f* f>s -> 10 }T
+T{ s" -2.5" >float -> -1 }T   T{ fnegate 4 s>f f* f>s -> 10 }T
+T{ s" 25e-1" >float -> -1 }T  T{ 4 s>f f* f>s -> 10 }T
+T{ s" 1e3" >float -> -1 }T    T{ f>s -> 1000 }T
+T{ s" abc" >float -> 0 }T
+T{ s" 1.5x" >float -> 0 }T
+T{ s" " >float -> 0 }T
+T{ fdepth -> 0 }T
+
+cr .( testfloat: literals, interpreted + compiled ) cr
+T{ 2.5 4 s>f f* f>s -> 10 }T
+: fx15 1.5 f* ;
+T{ 4 s>f fx15 f>s -> 6 }T
+: fnop ;                          \ plain colon word (not immediate)
+: f15 fnop 1.5 ;                  \ trailing float literal = the TCE trap
+T{ f15 2 s>f f* f>s -> 3 }T
+
+cr .( testfloat: transcendentals, tolerance 1e-4 ) cr
+T{ 16 s>f fsqrt 4 s>f ftol f~ -> -1 }T
+T{ 100 s>f flog 2 s>f ftol f~ -> -1 }T
+T{ 2 s>f falog 100 s>f ftol f~ -> -1 }T
+T{ 1 s>f fexp fln 1 s>f ftol f~ -> -1 }T
+T{ 2 s>f 10 s>f fpow 1024 s>f ftol f~ -> -1 }T
+T{ fpi 3.14159265 ftol f~ -> -1 }T
+T{ 1 s>f fsincos fdup f* fswap fdup f* f+ 1 s>f ftol f~ -> -1 }T
+T{ 0 s>f fsinh f0= -> -1 }T
+T{ 0 s>f facos fpi2 ftol f~ -> -1 }T
+
+cr .( testfloat: fatan2 quadrants ) cr
+T{ 1 s>f 1 s>f fatan2 fpi 4 s>f f/ ftol f~ -> -1 }T
+T{ 1 s>f 0 s>f fatan2 fpi2 ftol f~ -> -1 }T
+
+cr .( testfloat: isqrt, sizing ) cr
+T{ 16385 isqrt -> 128 }T
+T{ 3 floats -> 15 }T
+T{ 100 float+ -> 105 }T
+
+nf0 'notfound !                   \ unhook BEFORE the marker forgets (fnum)
+cr .( testfloat ok ) cr
+
+---testfloat---

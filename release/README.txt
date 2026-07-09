@@ -10,6 +10,11 @@ Core cartridge - smaller; load libraries from the SD card as you need them:
     x16emu -cart durexforth.crt -sdcard sdcard.img
   then e.g.   INCLUDE AUDIO      INCLUDE VRAMDISK
 
+Both cartridges carry on-demand modules in ROM (no SD card needed for them):
+    NEEDS GRAPHIC      ( 320x240x256 bitmap drawing - HELP GRAPHIC )
+    NEEDS FLOAT        ( floating point + literals  - HELP FLOAT )
+    NEEDS FLOATX       ( extended float set, after FLOAT )
+
 As a RAM program (compiles the core from the card on boot):
     x16emu -prg durexforth.prg -sdcard sdcard.img
 

@@ -28,7 +28,8 @@ $MAKECART = "makecart.exe"         # invoked from emulator\
 $IMG      = "release\sdcard.img"
 
 $CORE = @("wordlist","labels","doloop","debug","ls","require","open","accept","asm","turnkey")
-$OPT  = @("compat","see","io","dos","rnd","timer","audio","loadsave","vramdisk")
+$OPT  = @("compat","see","io","dos","rnd","timer","audio","loadsave","vramdisk","romdisk")
+$MODS = @("graphic","float","floatx")    # forth\mod\ on-demand modules -> cart ROM bank 40+
 
 New-Item -ItemType Directory -Force build, release | Out-Null
 
@@ -68,14 +69,14 @@ function Build-Cart([string]$Mode) {
     Invoke-Native $ACME @("asm\cartboot.asm")
 
     if ($Mode -eq 'full') {
-        $bake = "include compat`ninclude io`ninclude dos`ninclude rnd`ninclude timer`ninclude audio`ninclude loadsave`ninclude vramdisk`n"
-        $base = (Get-Content forth\base.fs -Raw) -replace "(?m)^\.\( save new durexforth\.\.\)", ($bake + ".( save new durexforth..)")
-        [System.IO.File]::WriteAllText("$PSScriptRoot\build\base.fs", $base)
+        $bake = "include compat`ninclude io`ninclude dos`ninclude rnd`ninclude timer`ninclude audio`ninclude loadsave`ninclude vramdisk`ninclude romdisk`n"
         $out = "durexforth_full.crt"
     } else {
-        [System.IO.File]::WriteAllText("$PSScriptRoot\build\base.fs", (Get-Content forth\base.fs -Raw))
+        $bake = "include romdisk`n"   # the core cart still gets the NEEDS loader
         $out = "durexforth.crt"
     }
+    $base = (Get-Content forth\base.fs -Raw) -replace "(?m)^\.\( save new durexforth\.\.\)", ($bake + ".( save new durexforth..)")
+    [System.IO.File]::WriteAllText("$PSScriptRoot\build\base.fs", $base)
 
     $files = @("build\base.fs") + (($CORE + $OPT) | ForEach-Object { "forth\$_.fs" })
     Populate-Card $files
@@ -83,30 +84,37 @@ function Build-Cart([string]$Mode) {
     Boot-ToSaveImage
     Invoke-Native $Python @("build\extract-durexfth.py", $IMG, "build\durexfth.raw")
 
+    # boot image at bank 32, zero-pad to bank 40, then the on-demand module store
     $stub = [System.IO.File]::ReadAllBytes("$PSScriptRoot\build\cartboot.bin")
     $img  = [System.IO.File]::ReadAllBytes("$PSScriptRoot\build\durexfth.raw")
-    $comb = New-Object byte[] ($stub.Length + $img.Length)
+    $mods = [System.IO.File]::ReadAllBytes("$PSScriptRoot\build\mods.bin")
+    $used = $stub.Length + $img.Length
+    if ($used -gt 131072) { throw "boot image spills past bank 39" }
+    $comb = New-Object byte[] (131072 + $mods.Length)
     [Array]::Copy($stub, 0, $comb, 0, $stub.Length)
     [Array]::Copy($img, 0, $comb, $stub.Length, $img.Length)
+    [Array]::Copy($mods, 0, $comb, 131072, $mods.Length)
     [System.IO.File]::WriteAllBytes("$PSScriptRoot\build\cartfull.bin", $comb)
 
     Invoke-Native ".\$MAKECART" @("-desc","durexForth X16","-author","durexForth","-version",$Mode,
         "-fill","0","-rom_file","32","..\build\cartfull.bin","-o","..\build\$out") "emulator"
 
-    $used = $stub.Length + $img.Length
     $banks = [math]::Ceiling($used / 16384)
     $free = $banks * 16384 - $used
-    Write-Host ("    build\{0}: stub {1} + image {2} = {3} B -> {4} bank(s), {5} B free in last bank" `
-                -f $out, $stub.Length, $img.Length, $used, $banks, $free)
+    Write-Host ("    build\{0}: stub {1} + image {2} = {3} B -> {4} bank(s), {5} B free in last bank; modules {6} B at bank 40" `
+                -f $out, $stub.Length, $img.Length, $used, $banks, $free, $mods.Length)
 }
 
-# ---- both carts, then the plain prg + populated sdcard, then collect ----
+# ---- modules, both carts, then the plain prg + populated sdcard, collect ----
+Write-Host "==> packing on-demand modules (ROM bank 40+)"
+Invoke-Native $Python (@("build\mkmods.py","build\mods.bin") + ($MODS | ForEach-Object { "forth\mod\$_.fs" }))
+
 Build-Cart core
 Build-Cart full
 
 Write-Host "==> prg + sdcard image"
 Assemble-Kernel
-Populate-Card (@("forth\base.fs") + (($CORE + $OPT) | ForEach-Object { "forth\$_.fs" }))
+Populate-Card (@("forth\base.fs") + (($CORE + $OPT) | ForEach-Object { "forth\$_.fs" }) + ($MODS | ForEach-Object { "forth\mod\$_.fs" }))
 
 Write-Host "==> collecting into release\"
 Copy-Item build\durexforth.crt       release\durexforth.crt      -Force
@@ -125,6 +133,11 @@ Fastest start - nothing else needed:
 Core cartridge - smaller; load libraries from the SD card as needed:
     x16emu -cart durexforth.crt -sdcard sdcard.img
   then e.g.   INCLUDE AUDIO      INCLUDE VRAMDISK
+
+Both cartridges carry on-demand modules in ROM (no SD card needed for them):
+    NEEDS GRAPHIC      ( 320x240x256 bitmap drawing - HELP GRAPHIC )
+    NEEDS FLOAT        ( floating point + literals  - HELP FLOAT )
+    NEEDS FLOATX       ( extended float set, after FLOAT )
 
 As a RAM program (compiles the core from the card on boot):
     x16emu -prg durexforth.prg -sdcard sdcard.img

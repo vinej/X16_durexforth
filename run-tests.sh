@@ -21,9 +21,12 @@ TIMEOUT="${TIMEOUT:-75}"
 
 # Forth core libraries (everything base.fs pulls in), minus base itself.
 FORTH="wordlist labels doloop debug ls require open accept asm turnkey \
-       compat see io dos rnd timer audio loadsave vramdisk"
+       compat see io dos rnd timer audio loadsave vramdisk romdisk"
+# Cart ROM modules (forth/mod/): packed into build/modcart.crt for the NEEDS
+# test AND written to the card so `include <mod>` works too.
+MODS="graphic float floatx"
 # Test-suite files.
-TESTS="tester testcore testcoreplus testcoreext testexception testx16 testvideo testsprite testtile testpalfx testinput testcoreadd testaudio testbank testvramdisk testloadsave test 1"
+TESTS="tester testcore testcoreplus testcoreext testexception testx16 testvideo testsprite testtile testpalfx testinput testcoreadd testaudio testbank testvramdisk testloadsave testgraphic testromdisk testfloat test 1"
 
 echo "==> assembling kernel"
 mkdir -p build
@@ -38,12 +41,23 @@ echo "==> writing sources + tests to $IMG (copy of $SEED)"
 cp "$SEED" "$IMG"
 FILES="build/base.fs"
 for n in $FORTH; do FILES="$FILES forth/$n.fs"; done
+for n in $MODS; do FILES="$FILES forth/mod/$n.fs"; done
 for n in $TESTS; do FILES="$FILES test/$n.fs"; done
 "$PY" build/mkcard.py "$IMG" $FILES >/dev/null
 
+echo "==> packing module cart (ROM bank 40, non-bootable) for the NEEDS test"
+MODFILES=""; for n in $MODS; do MODFILES="$MODFILES forth/mod/$n.fs"; done
+"$PY" build/mkmods.py build/mods.bin $MODFILES
+# pad banks 32..39 with zeros so the store sits at bank 40 exactly like the
+# release carts; zeros at bank 32 $C000 = no "CX16" sig = the cart won't boot.
+"$PY" -c "open('build/modpad.bin','wb').write(b'\0'*131072+open('build/mods.bin','rb').read())"
+( cd emulator && MSYS_NO_PATHCONV=1 "./$MAKECART" \
+    -desc "durexForth modules" -author "durexForth" -version test \
+    -fill 0 -rom_file 32 ../build/modpad.bin -o ../build/modcart.crt )
+
 echo "==> running suite in x16emu (warp, up to ${TIMEOUT}s)"
 OUT=$(cd emulator && MSYS_NO_PATHCONV=1 timeout "$TIMEOUT" "./$EMU" \
-        -sdcard "../$IMG" -prg durexforth.prg -run \
+        -sdcard "../$IMG" -prg durexforth.prg -run -cart ../build/modcart.crt \
         -echo -warp </dev/null 2>&1 | tr -d '\r') || true
 
 echo "-------------------- emulator output (tail) --------------------"
