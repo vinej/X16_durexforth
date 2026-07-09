@@ -106,6 +106,10 @@ PLACEHOLDER_ADDRESS = $1200
 
     jsr PAGE
 
+    lda #8              ; default current device = 8 (SD card). BASIC sets this
+    sta $0292           ; on a -prg RUN, but a cart boot skips BASIC, so set it
+                        ; here or LS / INCLUDE / LOADB would target device 0.
+
 _START = * + 1
     jsr load_base
 

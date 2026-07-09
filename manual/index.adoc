@@ -19,12 +19,6 @@ include::editor.adoc[]
 == Forth Words
 include::words.adoc[]
 
-== Graphics
-include::gfx.adoc[]
-
-== SID
-include::sid.adoc[]
-
 == Music
 include::mml.adoc[]
 
