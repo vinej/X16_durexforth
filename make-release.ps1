@@ -75,7 +75,9 @@ function Build-Cart([string]$Mode) {
         $bake = "include romdisk`n"   # the core cart still gets the NEEDS loader
         $out = "durexforth.crt"
     }
-    $base = (Get-Content forth\base.fs -Raw) -replace "(?m)^\.\( save new durexforth\.\.\)", ($bake + ".( save new durexforth..)")
+    # Insert BEFORE 'include turnkey': the packed image's first boot runs
+    # turnkey's marker (restore-forth), forgetting everything defined after it.
+    $base = (Get-Content forth\base.fs -Raw) -replace "(?m)^include turnkey$", ($bake + "include turnkey")
     [System.IO.File]::WriteAllText("$PSScriptRoot\build\base.fs", $base)
 
     $files = @("build\base.fs") + (($CORE + $OPT) | ForEach-Object { "forth\$_.fs" })

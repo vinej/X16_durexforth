@@ -1,0 +1,6 @@
+' bload 0<> .( F1= ) .
+' cells 0<> .( F2= ) .
+' pcmctrl 0<> .( F3= ) .
+' vsave 0<> .( F4= ) .
+ti 2 sleep stop .( F5-OK )
+.( CART-FULL-DONE )

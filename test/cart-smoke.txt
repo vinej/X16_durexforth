@@ -1,0 +1,32 @@
+marker t1 needs graphic
+ginit 50 50 7 pset 50 320 * 50 + 0 swap vpeek 0 screen 7 = .( M1= ) .
+t1
+marker t2 needs advanced
+64 sin8 127 = .( M2= ) .
+t2
+marker t3 needs graphic needs advgfx
+10 10 50 50 clip-line nip nip nip nip .( M3= ) .
+t3
+marker t4 needs string
+s" 42" val 42 = .( M4= ) .
+t4
+marker t5 needs system
+' syscall 0<> .( M5= ) .
+t5
+marker t6 needs extras
+' begin-structure 0<> .( M6= ) .
+t6
+marker t7 'notfound @ needs float needs floatx
+2 s>f fsqrt f>s 1 = .( M7= ) .
+'notfound ! t7
+marker t8 needs file
+' open-file 0<> .( M8= ) .
+t8
+marker t9 needs bmx
+bmx-stride @ 320 = .( M9= ) .
+t9
+marker t10 needs advsnd
+' env-tick 0<> .( M10= ) .
+t10
+latest here - 255 u> .( DICT= ) .
+.( CART-SMOKE-DONE )

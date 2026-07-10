@@ -35,16 +35,18 @@ printf '!text "durexforth x16"\n' > build/version.asm
 "$ACME" asm/cartboot.asm            # -> build/cartboot.bin (64 bytes)
 cp build/durexforth.prg emulator/durexforth.prg
 
-# Bake extra libs into the saved image for a 'full' cart by inserting includes
-# right before base.fs's save-pack step.
+# Bake extra libs into the saved image by inserting includes BEFORE
+# 'include turnkey': the packed image's first boot executes turnkey's
+# ---turnkey--- marker (restore-forth), which forgets everything defined
+# after that point - anything baked later silently vanishes at boot.
 if [ "$MODE" = "full" ]; then
   BAKE='include compat\ninclude io\ninclude dos\ninclude rnd\ninclude timer\ninclude audio\ninclude loadsave\ninclude vramdisk\ninclude romdisk\n'
-  sed "s/^\.( save new durexforth\.\.)/${BAKE}.( save new durexforth..)/" forth/base.fs > build/base.fs
+  sed "s/^include turnkey$/${BAKE}include turnkey/" forth/base.fs > build/base.fs
   OUTNAME=durexforth_full.crt
 else
   # the core cart still gets the on-demand module loader (NEEDS)
   BAKE='include romdisk\n'
-  sed "s/^\.( save new durexforth\.\.)/${BAKE}.( save new durexforth..)/" forth/base.fs > build/base.fs
+  sed "s/^include turnkey$/${BAKE}include turnkey/" forth/base.fs > build/base.fs
   OUTNAME=durexforth.crt
 fi
 

@@ -25,4 +25,4 @@
 --- durexForth ---
 [x] NOTFOUND ( caddr u -- ) - handler for an unrecognised word (prints the name + "?").
 [x] IOABORT ( ioresult -- ) - if ioresult is nonzero, print a message and THROW -37.
-[x] STOP ( clk -- ) - print the time elapsed since START (TIMER.FTH; pairs with START ( -- clk )).
+[x] STOP ( clk -- ) - print the time elapsed since TI (TIMER.FTH; pairs with TI ( -- clk ); named like BASIC TI - not START, which is the turnkey boot cell).
