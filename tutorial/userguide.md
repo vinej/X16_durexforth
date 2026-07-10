@@ -581,6 +581,40 @@ VARIABLE SCORE     10 CONSTANT LIVES
 80 BUFFER: LINEBUF                \ n-byte buffer word
 ```
 
+### VARIABLE vs VALUE vs CONSTANT
+
+All three hold one cell — they differ in how you read and write it:
+
+| | `VARIABLE X` | `10 VALUE X` | `10 CONSTANT X` |
+|---|---|---|---|
+| read | `X @` | `X` | `X` |
+| write | `42 X !` | `42 TO X` | never |
+| initialised? | **no** — junk until you store | yes, at creation | yes |
+| its address | `X` pushes it | not meant for that | not meant for that |
+
+A **VARIABLE**'s name pushes the *address* of its cell; you do the memory
+access yourself with `@` and `!` (and friends like `+!` and `?`). A
+**VALUE**'s name pushes the *contents* directly — no `@` — and is written
+through `TO`. A **CONSTANT** is a VALUE you can never change.
+
+```forth
+VARIABLE SCORE  0 SCORE !     \ address-style: read X @, write n X !
+1 SCORE +!  SCORE ?           \ 1
+
+25 VALUE SPEED                \ contents-style: read bare, write with TO
+SPEED 2* TO SPEED  SPEED .    \ 50   (variable spelling: SPEED @ 2* SPEED !)
+```
+
+Rule of thumb: **CONSTANT** if it never changes; **VALUE** for something
+read often and written rarely (a speed, a mode, a device number — the
+reads stay clean); **VARIABLE** when it changes constantly or you need the
+address itself (`+!` counters, buffers, anything other code pokes at).
+
+Two traps: a fresh **VARIABLE is not zeroed** in durexForth — after a
+MARKER/FORGET cycle it holds old dictionary bytes, so always initialise
+(`VARIABLE X 0 X !`). And `TO` writes into whatever name *follows* it in
+the source, so it only works with names, not computed xts.
+
 `CREATE` + `DOES>` is Forth's defining-word factory — the created word
 pushes its data field, `DOES>` adds behaviour:
 

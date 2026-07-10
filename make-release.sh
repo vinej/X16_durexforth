@@ -23,6 +23,10 @@ echo "==> [4/4] cartridge boot verification (typed NEEDS smoke test)"
 echo "==> collecting into release/"
 cp build/durexforth.crt       release/durexforth.crt
 cp build/durexforth_full.crt  release/durexforth_full.crt
+# .bin = the RAW bank image (no .crt header) for the MiSTer X16 core;
+# x16emu's -cart only accepts the headered .crt
+cp build/durexforth.bin       release/durexforth.bin
+cp build/durexforth_full.bin  release/durexforth_full.bin
 cp build/durexforth.prg             release/durexforth.prg
 
 cat > release/README.txt <<'EOF'
@@ -63,6 +67,11 @@ sdcard.img is a FAT32 image holding the Forth source libraries (AUDIO,
 VRAMDISK, SEE, ...); it is also where EDIT saves and INCLUDE loads your own
 .FS files.  On real hardware, write it to an SD card and insert a cartridge
 programmed with a .crt (or load the .prg).
+
+durexforth.bin / durexforth_full.bin are the same cartridges as RAW ROM
+bank images (no .crt header) for the MiSTer X16 core; x16emu wants the
+.crt files.  The card also carries DUREXFORTH.PRG, so on MiSTer you can
+alternatively boot to BASIC and LOAD"DUREXFORTH.PRG",8 then RUN.
 EOF
 
 echo "==> release/ ready:"

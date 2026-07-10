@@ -92,11 +92,17 @@ function Build-Cart([string]$Mode) {
     $mods = [System.IO.File]::ReadAllBytes("$PSScriptRoot\build\mods.bin")
     $used = $stub.Length + $img.Length
     if ($used -gt 131072) { throw "boot image spills past bank 39" }
-    $comb = New-Object byte[] (131072 + $mods.Length)
+    # pad to whole 16 KB banks; the raw image doubles as the MiSTer .bin
+    # (the MiSTer X16 core loads cartridges as raw bank data - a renamed
+    # .crt, with its header, boots into the monitor there)
+    $total = 131072 + [math]::Ceiling($mods.Length / 16384) * 16384
+    $comb = New-Object byte[] $total
     [Array]::Copy($stub, 0, $comb, 0, $stub.Length)
     [Array]::Copy($img, 0, $comb, $stub.Length, $img.Length)
     [Array]::Copy($mods, 0, $comb, 131072, $mods.Length)
     [System.IO.File]::WriteAllBytes("$PSScriptRoot\build\cartfull.bin", $comb)
+    $rawbin = $out -replace '\.crt$', '.bin'
+    [System.IO.File]::WriteAllBytes("$PSScriptRoot\build\$rawbin", $comb)
 
     Invoke-Native ".\$MAKECART" @("-desc","durexForth X16","-author","durexForth","-version",$Mode,
         "-fill","0","-rom_file","32","..\build\cartfull.bin","-o","..\build\$out") "emulator"
@@ -116,11 +122,15 @@ Build-Cart full
 
 Write-Host "==> prg + sdcard image"
 Assemble-Kernel
-Populate-Card (@("forth\base.fs") + (($CORE + $OPT) | ForEach-Object { "forth\$_.fs" }) + ($MODS | ForEach-Object { "forth\mod\$_.fs" }) + (Get-ChildItem "help\helpdoc\*.TXT" | ForEach-Object { $_.FullName }))
+Populate-Card (@("forth\base.fs") + (($CORE + $OPT) | ForEach-Object { "forth\$_.fs" }) + ($MODS | ForEach-Object { "forth\mod\$_.fs" }) + (Get-ChildItem "help\helpdoc\*.TXT" | ForEach-Object { $_.FullName }) + @("build\durexforth.prg"))
 
 Write-Host "==> collecting into release\"
 Copy-Item build\durexforth.crt       release\durexforth.crt      -Force
 Copy-Item build\durexforth_full.crt  release\durexforth_full.crt -Force
+# .bin = the RAW bank image (no .crt header) for the MiSTer X16 core;
+# x16emu's -cart only accepts the headered .crt
+Copy-Item build\durexforth.bin       release\durexforth.bin      -Force
+Copy-Item build\durexforth_full.bin  release\durexforth_full.bin -Force
 Copy-Item build\durexforth.prg       release\durexforth.prg      -Force
 # release\sdcard.img is already the populated card.
 
@@ -160,6 +170,11 @@ at boot for an AUTORUN file to include automatically.
 sdcard.img is a FAT32 image with the Forth source libraries and is where EDIT
 saves and INCLUDE loads your own .FS files.  On real hardware write it to an
 SD card and load a .crt via a cartridge (or run the .prg).
+
+durexforth.bin / durexforth_full.bin are the same cartridges as RAW ROM
+bank images (no .crt header) for the MiSTer X16 core; x16emu wants the
+.crt files.  The card also carries DUREXFORTH.PRG, so on MiSTer you can
+alternatively boot to BASIC and LOAD"DUREXFORTH.PRG",8 then RUN.
 "@ | Out-File -Encoding ascii release\README.txt
 
 Write-Host "==> cartridge boot verification (typed NEEDS smoke test)"

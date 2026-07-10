@@ -38,6 +38,7 @@ FILES=""
 for n in $SRCS; do FILES="$FILES forth/$n.fs"; done
 FILES="$FILES forth/mod/graphic.fs forth/mod/float.fs forth/mod/floatx.fs forth/mod/file.fs forth/mod/string.fs forth/mod/system.fs forth/mod/extras.fs forth/mod/advanced.fs forth/mod/advgfx.fs forth/mod/bmx.fs forth/mod/advsnd.fs"  # modules also usable via INCLUDE
 FILES="$FILES $(ls help/helpdoc/*.TXT)"   # pages for the HELP word
+FILES="$FILES build/durexforth.prg"       # so LOAD"DUREXFORTH.PRG",8 works
 "$PY" build/mkcard.py "$IMG" $FILES
 
 if [ "${1:-}" = "run" ]; then

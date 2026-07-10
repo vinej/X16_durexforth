@@ -199,10 +199,15 @@ def encode_source(ascii_bytes):
 wipe_all()
 for path in SRCS:
     with open(path, "rb") as src:
-        data = encode_source(src.read())
+        raw = src.read()
+    base = os.path.basename(path)
+    if base.lower().endswith('.prg'):
+        # binaries go verbatim: they already carry their own PRG header
+        add_file(base, raw)
+        continue
+    data = encode_source(raw)
     # forth sources drop their .fs on the card; anything else (e.g. the
     # HELP .TXT pages) keeps its extension so names cannot collide
-    base = os.path.basename(path)
     if base.lower().endswith('.fs'):
         base = base[:-3]
     add_file(base, data)

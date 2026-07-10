@@ -72,6 +72,11 @@ IMGSZ=$(stat -c%s build/cartfull.bin)
 [ "$IMGSZ" -gt 131072 ] && { echo "boot image spills past bank 39!"; exit 1; }
 "$PY" -c "open('build/cartfull.bin','ab').write(b'\0'*(131072-$IMGSZ))"
 cat build/mods.bin >> build/cartfull.bin
+# pad to a whole number of 16 KB banks and keep the RAW image as .bin:
+# the MiSTer X16 core loads cartridges as raw bank data (a renamed .crt,
+# with its header, boots into the monitor there)
+"$PY" -c "import os; s=os.path.getsize('build/cartfull.bin'); open('build/cartfull.bin','ab').write(bytes((-s)%16384))"
+cp build/cartfull.bin "build/${OUTNAME%.crt}.bin"
 ( cd emulator && MSYS_NO_PATHCONV=1 "./$MAKECART" \
     -desc "durexForth X16" -author "durexForth" -version "$MODE" \
     -fill 0 -rom_file 32 ../build/cartfull.bin -o "../build/$OUTNAME" )
