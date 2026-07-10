@@ -113,3 +113,46 @@ rts, end-code
   2 dcsel 0 $9f29 c!  0 dcsel           \ FX off; DCSEL/ADDRSEL back to 0
   $9f22 c@ 15 and 16 or $9f22 c!        \ port 0 increment back to +1
   r> 3 and 0 ?do $9f24 c@ $9f23 c! loop ;
+
+\ --- VERA FX affine (rotozoom / mode-7) ---------------------------------------------
+\ Port 1 becomes a texture sampler: an 8x8-texel tile set + a tile map define
+\ a square texture, AFFINE-RAY aims a fixed-point sampling ray, and every
+\ DATA1 read returns the texel under the ray and steps it.  A rotated, scaled
+\ scanline is one AFFINE-RAY + one AFFINE-LINE; feed dx/dy from SIN8/COS8
+\ (NEEDS ADVANCED) times the zoom.  Tiles are 8 bpp, 64 bytes each.
+: (fx>base) ( bank addr -- bits )       \ VRAM addr 16:11 packed into bits 7:2
+  11 rshift swap 1 and 5 lshift or 2* 2* ;
+: affine-on ( tbank taddr mbank maddr size clip -- )
+\ tile data + tile map VRAM addresses (both 2 KB aligned);
+\ size: 0=2x2 1=8x8 2=32x32 3=128x128 tiles; clip: 0 = wrap at the edges
+  2 dcsel  3 $9f29 c!                   \ FX_CTRL: ADDR1 mode 3 = affine
+  >r >r
+  (fx>base) r> 3 and or $9f2b c!        \ FX_MAPBASE | map size
+  (fx>base) r> 1 and 2* or $9f2a c!     \ FX_TILEBASE | clip enable
+  0 dcsel ;
+: (incr!) ( n lo-reg -- )               \ 15-bit signed 1/512-texel increment
+  >r $7fff and dup 255 and r@ c! 8 rshift r> 1+ c! ;
+: affine-ray ( x y dx dy -- )
+\ x/y: starting texel 0-1023; dx/dy: signed step per read, 512 = one texel
+  3 dcsel
+  $9f2b (incr!)  $9f29 (incr!)
+  5 dcsel  $80 $9f29 c!  $80 $9f2a c!   \ subpixel 0.5: sample texel centres
+  4 dcsel  swap
+  dup 255 and $9f29 c!  8 rshift 7 and $9f2a c!
+  dup 255 and $9f2b c!  8 rshift 7 and $9f2c c!  \ positions last: prefetch
+  0 dcsel ;
+code (aspan) ( n -- )                   \ n >= 1 texels: DATA1 -> DATA0
+lsb lda,x w sta,
+msb lda,x w 1+ sta,
+inx,
+:-
+$9f24 lda, $9f23 sta,
+sec, w lda, 1 sbc,# w sta,
+w 1+ lda, 0 sbc,# w 1+ sta,
+w lda, w 1+ ora,
+-branch bne,
+rts, end-code
+: affine-span ( n -- ) ?dup if (aspan) then ;  \ port 0 aimed by the caller
+: affine-line ( bank addr n -- )        \ sample n texels to VRAM dst, +1 step
+  >r vaddr r> affine-span ;
+: affine-off ( -- ) 2 dcsel 0 $9f29 c! 0 dcsel ;

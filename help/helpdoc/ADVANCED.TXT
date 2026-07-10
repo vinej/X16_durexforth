@@ -20,7 +20,8 @@ Graphics (NEEDS ADVGFX, after GRAPHIC)
 [ ] gfx_text - text onto the bitmap
 [x] gfx_flood -> FLOOD ( x y color ) scanline fill, 128-span seed stack
 [x] fx_copy -> FX-COPY ( sbank saddr dbank daddr u ) cached 4-byte copies
-[ ] fx_affine_on/ray/span - affine tile mode (deferred: its own project)
+[x] fx_affine_on/ray/span -> AFFINE-ON AFFINE-RAY AFFINE-SPAN AFFINE-LINE
+    AFFINE-OFF - rotozoom / mode-7 sampling (see VERAFX)
 
 Audio (NEEDS ADVSND)
 [x] psg_env_tick -> ENV-START ENV-RELEASE ENV-STOP ENV-TICK

@@ -46,6 +46,28 @@ T{ 10 200 pix -> 0 }T
 0 32000 0 64320 5 fx-copy
 T{ 0 201 pix  3 201 pix  4 201 pix -> 8 8 0 }T
 
+cr .( testadvgfx: fx affine ) cr
+\ 16x16-texel texture above the bitmap: tiles at 1:$3000, 2x2 map at 1:$3800
+: t! ( val off -- ) $3000 + 1 swap rot vpoke ;
+: mktex ( -- )
+  64 0 do i i t! loop                       \ tile 0: texel value = y*8+x
+  64 0 do $99 i 64 + t! loop                \ tile 1: solid $99
+  0 $800 t!  1 $801 t!  1 $802 t!  0 $803 t! ;
+mktex
+1 $3000 1 $3800 0 0 affine-on
+0 0 512 0 affine-ray  0 $f000 10 affine-line     \ straight along x
+T{ 0 $f000 vpeek  0 $f003 vpeek  0 $f007 vpeek -> 0 3 7 }T
+T{ 0 $f008 vpeek  0 $f009 vpeek -> $99 $99 }T    \ crossed into tile 1
+0 0 1024 0 affine-ray  0 $f010 6 affine-line     \ zoomed out x2
+T{ 0 $f010 vpeek  0 $f011 vpeek  0 $f013 vpeek  0 $f014 vpeek -> 0 2 6 $99 }T
+0 0 0 512 affine-ray  0 $f020 4 affine-line      \ straight down
+T{ 0 $f020 vpeek  0 $f021 vpeek  0 $f023 vpeek -> 0 8 24 }T
+0 0 512 512 affine-ray  0 $f030 4 affine-line    \ the 45-degree diagonal
+T{ 0 $f030 vpeek  0 $f031 vpeek  0 $f033 vpeek -> 0 9 27 }T
+8 0 512 0 affine-ray  0 $f040 10 affine-line     \ wrap at the 16-texel edge
+T{ 0 $f040 vpeek  0 $f047 vpeek  0 $f048 vpeek  0 $f049 vpeek -> $99 $99 0 1 }T
+affine-off
+
 cr .( testadvgfx ok ) cr
 
 ---testadvgfx---
