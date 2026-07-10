@@ -12,7 +12,6 @@ MARKER, ...) are explained with examples in the [advanced
 [x] ] ( -- ) - switch back to compile state.
 [x] LITERAL ( x -- ) - compile x as a literal (IMMEDIATE). [ 2 3 + ] LITERAL
 [x] 2LITERAL ( d -- ) - compile a double literal.
-[ ] SLITERAL ( addr len -- ) - compile a string literal.
 [x] POSTPONE ( "name" -- ) - compile the compilation behaviour of a word
     (IMMEDIATE).
 [ ] [COMPILE] ( "name" -- ) - (legacy) force-compile an immediate word.

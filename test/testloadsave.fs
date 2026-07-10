@@ -41,6 +41,21 @@ T{ s" lstmp" 8 vbuf bverify -> -1 }T             \ matches memory
 99 vbuf 5 + c!                                   \ corrupt one byte
 T{ s" lstmp" 8 vbuf bverify -> 0 }T              \ now mismatches
 
+cr .( testloadsave: BANKSAVE / BANKLOAD round-trip across a bank seam ) cr
+: pat! ( byte i -- )                             \ bank1:8180 + i, crossing to bank 2
+  8180 + 1 over 8192 / + swap 8192 mod b! ;
+: pfill 40 0 do i 100 + i pat! loop ;            \ bytes 100..139
+pfill
+0 c@ constant bk0                                \ baseline bank register
+s" bktmp" 8 1 8180 40 banksave                   \ slice spans banks 1 and 2
+s" bktmp" 8 3 bankload                           \ read back at bank3:$A000
+T{ 3 0 b@  3 11 b@  3 39 b@ -> 100 111 139 }T
+T{ 0 c@ -> bk0 }T                                \ bank register restored
+
+cr .( testloadsave: BANKLOAD of a 26 KB file, 4 banks ) cr
+s" testcore" 8 4 bankload                        \ spills across banks 4..7
+T{ 4 0 b@  5 0 b@  6 3616 b@ -> 67 45 79 }T      \ bytes 0 / 8192 / 20000
+
 cr .( testloadsave ok ) cr
 
 ---testloadsave---

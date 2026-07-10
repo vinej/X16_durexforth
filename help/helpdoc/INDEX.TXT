@@ -38,7 +38,6 @@ Type  HELP <topic>   e.g.  HELP STACK
  KERNAL      SYSCALL  (call any KERNAL routine)
  CONTROL     EDIT SETBANK B@ B! SLEEP MS REBOOT clock I2C ...
  FLOAT       S>F F+ F* FSQRT FSIN F. ...   (FLOAT.FTH)
- BASICALIAS  NHEX STR VAL LEFT MID ...     (BASICSTR.FTH)
  BIT         SPLIT CATNIB SBIT CBIT FBIT
  ASSEMBLER   inline 6502 assembler  CODE ... END-CODE
  TOOLKIT     build the TK.* fast-load image + AUTORUN.FTH

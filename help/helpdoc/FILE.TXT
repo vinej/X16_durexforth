@@ -46,3 +46,6 @@ File access methods combine with BIN: e.g. R/O BIN.
 [x] RDERR ( -- ) - read and print the drive's error channel.
 [x] LS ( "pattern" -- ) - list the directory (optional match pattern).
 [x] RDIR ( addr -- ) - print a directory previously loaded at addr.
+
+[x] OPEN ( c-addr u fam -- fileid ior ) - open a file (like OPEN-FILE).
+[x] CLOSE ( fileid -- ior ) - close a file.

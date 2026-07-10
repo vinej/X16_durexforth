@@ -42,6 +42,46 @@ CHARSET ; ( n -- )  screen_set_charset $FF62 (.A=charset: 1=ISO 2/3=PET .. 12=Ka
     inx                         ; drop n
     rts
 
+    +BACKLINK "keymap", 6
+KEYMAP ; ( c-addr u -- )  set the keyboard layout by name:  s" de-de" keymap
+    ; KERNAL keymap $FED2, carry clear = set, .X/.Y -> zero-terminated name.
+    ; The ROM names are uppercase ("DE-DE", "EN-US/INT", "ABC/X16", ...) and
+    ; matched exactly, so the copy is uppercased here.  An unknown name aborts
+    ; with the usual reverse-video "name?" error.
+    lda LSB, x                  ; u
+    cmp #15
+    bcs .km_fail                ; too long for any layout name
+    tay
+    lda #0
+    sta .km_buf, y              ; zero-terminate the copy
+    lda LSB+1, x
+    sta W
+    lda MSB+1, x
+    sta W+1
+-   dey
+    bmi +
+    lda (W), y
+    cmp #'a'
+    bcc ++
+    cmp #'z'+1
+    bcs ++
+    and #$df                    ; a-z -> A-Z
+++  sta .km_buf, y
+    bra -
++   phx                         ; save Forth SP (kernal clobbers .X/.Y)
+    ldx #<.km_buf
+    ldy #>.km_buf
+    clc                         ; carry clear = set layout
+    jsr $fed2
+    plx
+    bcs .km_fail
+    inx                         ; drop c-addr u
+    inx
+    rts
+.km_fail
+    jmp print_word_not_found_error  ; ( c-addr u ) -> "name?" + throw -13
+.km_buf !fill 16, 0
+
     +BACKLINK "monitor", 7
 MONITOR ; ( -- )  enter the KERNAL machine-language monitor. Does NOT return.
     jmp $fecc

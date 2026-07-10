@@ -52,6 +52,10 @@ T{ 21 x2 -> 42 }T
 T{ 100 x2 -> 200 }T
 T{ -3 x2 -> -6 }T
 
+cr .( testx16: keymap ) cr
+s" de-de" keymap  s" abc/x16" keymap             \ set + restore boot default
+T{ :noname s" xx-xx" keymap ; catch -> -13 }T    \ unknown layout -> "xx-xx?"
+
 cr .( testx16 ok ) cr
 
 ---testx16---
