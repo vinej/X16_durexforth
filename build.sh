@@ -23,7 +23,7 @@ IMG=release/sdcard.img
 # Source files that make up the plain-Forth core. base.fs is loaded first by
 # the kernel; it in turn includes wordlist/labels/doloop/debug/ls/require/open/
 # accept/asm/turnkey. compat/see/io/dos/rnd/timer are optional libraries.
-SRCS="base wordlist labels doloop debug ls require open accept asm turnkey \
+SRCS="base wordlist labels doloop debug ls require open accept help asm turnkey \
       compat see io dos rnd timer audio loadsave vramdisk romdisk"
 
 echo "==> assembling kernel"
@@ -37,6 +37,7 @@ echo "==> writing sources to $IMG"
 FILES=""
 for n in $SRCS; do FILES="$FILES forth/$n.fs"; done
 FILES="$FILES forth/mod/graphic.fs forth/mod/float.fs forth/mod/floatx.fs forth/mod/file.fs forth/mod/string.fs forth/mod/system.fs forth/mod/extras.fs"  # modules also usable via INCLUDE
+FILES="$FILES $(ls help/helpdoc/*.TXT)"   # pages for the HELP word
 "$PY" build/mkcard.py "$IMG" $FILES
 
 if [ "${1:-}" = "run" ]; then

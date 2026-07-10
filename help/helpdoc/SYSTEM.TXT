@@ -1,18 +1,24 @@
 === SYSTEM - System and environment ===
 
 [x] ENVIRONMENT? ( addr len -- false | i*x true ) - query a system attribute.
-[ ] BYE ( -- ) - leave Forth (ROM build restarts the cold boot).
-[ ] VER ( -- n ) - version number, high byte x 256 + low. VER .
-[ ] X16 / C64 / F256 ( -- flag ) - build/platform flags (true for the current
+[x] HELP ( "topic" -- ) - always resident. HELP alone shows the topic index;
+    HELP STRING shows one page (the .TXT pages ship on the SD card), paged
+    with MORE.
+[x] AUTORUN - if a file named AUTORUN exists on the SD card, it is INCLUDEd
+    at every boot before the banner (create it with EDIT; delete it to
+    disable). Errors in it abort to the prompt.
+[x] BYE ( -- ) - leave Forth (ROM build restarts the cold boot).
+[x] VER ( -- n ) - version number, high byte x 256 + low. VER .
+[x] X16 / C64 / F256 ( -- flag ) - build/platform flags (true for the current
     target).
-[ ] USR ( i*x addr -- j*x ) - call machine code at addr (X16), passing/returning
+[x] USR ( i*x addr -- j*x ) - call machine code at addr (X16), passing/returning
     the stack.
-[ ] RANDOM ( -- n ) - a 16-bit pseudo-random number (KERNAL entropy).
+[x] RANDOM ( -- n ) - a 16-bit pseudo-random number (KERNAL entropy).
 [x] RND ( u -- n ) - pseudo-random number in 0..u-1 (BASIC-style). 6 RND 1+  ->  a
     die roll.
-[ ] IRQ ( xt -- ) - arm a Forth word to run once per 60 Hz frame; 0 IRQ disarms.
+[x] IRQ ( xt -- ) - arm a Forth word to run once per 60 Hz frame; 0 IRQ disarms.
     Callback must be short and stack-neutral. ' TICK IRQ
-[ ] FREE ( -- ) - print the free dictionary space. On the wide-dictionary builds
+[x] FREE ( -- ) - print the free dictionary space. On the wide-dictionary builds
   it shows the near + far (RAM-bank) pools; on all other builds, the single
   low-RAM pool (the UNUSED value).
 [x] WORDS ( -- ) - list the words in the context wordlist.

@@ -200,8 +200,11 @@ wipe_all()
 for path in SRCS:
     with open(path, "rb") as src:
         data = encode_source(src.read())
-    # forth source file names have no extension on the card
-    base = os.path.splitext(os.path.basename(path))[0]
+    # forth sources drop their .fs on the card; anything else (e.g. the
+    # HELP .TXT pages) keeps its extension so names cannot collide
+    base = os.path.basename(path)
+    if base.lower().endswith('.fs'):
+        base = base[:-3]
     add_file(base, data)
 
 f.flush(); os.fsync(f.fileno()); f.close()

@@ -1,0 +1,29 @@
+see : C:\quartus\projects\x16_library for more info
+System / IRQ
+
+irq_save_regs / irq_restore_regs — round-trips r0–r15 and the library's X16_P0..T7 parameter block so IRQ callbacks can safely call library routines (Prog8's virtual-register saving).
+irq_line_install — per-scanline raster IRQ handler; irq_sprcol_install + sprite_collisions for VERA hardware sprite collision IRQs.
+Game math (math.asm)
+
+[ ] irq_save_regs
+[ ] irq_restore_regs
+
+16-bit xorshift PRNG (rnd_seed/rnd16, with the zero-seed fixed point nudged off), 256-entry sin/cos tables, atan2, and lerp.
+Graphics
+
+[ ] clip_line — Cohen–Sutherland line clipping, removing the drawers' "does not clip" caveat.
+[ ] gfx_circle / [ ] gfx_disc — clipped circle outline and filled disc.
+[ ] gfx_text — text rendering onto the bitmap.
+[ ] gfx_flood — scanline flood fill over a bounded span stack.
+VERA FX: [ ] fx_copy (cached 4-byte copies), FX transparency writes, and [ ] fx_affine_on/fx_affine_ray/fx_affine_span for the affine tile mode.
+Audio
+
+[ ] psg_env_tick — per-frame attack/sustain/release envelopes on all PSG voices.
+[ ] adpcm_block — IMA ADPCM decode (4-bit deltas → 16-bit samples), making SD-card streaming through pcm_stream_start practical.
+[ ] pcm_stream_start_bank (streaming PCM from banked RAM via 24-bit address) and stream looping.
+Storage / util
+
+[ ] dos.asm — DOS command channel support (Prog8's diskio-style features).
+[ ] buffers.asm — ring/byte buffers.
+[ ] bmx_load / bmx_save — BMX version 1 image format, explicitly "the format Prog8 and the community tools write" (bmx.asm:7); restores the palette and streams pixels to VRAM with configurable bmx_stride.
+[ ] Compression: zx0 decompressor (salvador/zx0 output), tsc_decompress (TSCrunch, rewritten with legal 65C02 pairs since the original uses illegal opcodes), alongside the existing LZSA2 mem_decompress.

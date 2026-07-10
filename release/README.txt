@@ -22,6 +22,9 @@ Both cartridges carry on-demand modules in ROM (no SD card needed for them):
 As a RAM program (compiles the core from the card on boot):
     x16emu -prg durexforth.prg -sdcard sdcard.img
 
+sdcard.img also carries the HELP pages (HELP, or HELP STRING for one topic)
+and is checked at boot for an AUTORUN file to include automatically.
+
 sdcard.img is a FAT32 image holding the Forth source libraries (AUDIO,
 VRAMDISK, SEE, ...); it is also where EDIT saves and INCLUDE loads your own
 .FS files.  On real hardware, write it to an SD card and insert a cartridge

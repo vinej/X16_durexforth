@@ -79,6 +79,15 @@ T{ fd @ include-file incw -> 42 }T
 T{ fd @ close-file -> 0 }T
 T{ s" ftest5" delete-file -> 0 }T
 
+cr .( testfile: autorun hook ) cr
+T{ (autorun) depth -> 0 }T                 \ no AUTORUN on the card: silent no-op
+T{ s" autorun" w/o create-file swap fd ! -> 0 }T
+T{ s" : arok 77 ;" fd @ write-line -> 0 }T
+T{ fd @ close-file -> 0 }T
+(autorun)                                  \ boot hook finds + includes it now
+T{ arok -> 77 }T
+T{ s" autorun" delete-file -> 0 }T
+
 cr .( testfile: unsupported / no-op / pool clean ) cr
 T{ 1 0 5 resize-file -> -1 }T
 T{ 5 flush-file -> 0 }T

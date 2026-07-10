@@ -1,0 +1,21 @@
+see : C:\quartus\projects\x16_library for more info
+
+Floating point (ROM binding bugs) — float.asm
+
+f_neg called fp_negfac, which despite its name is not negate — it's an internal helper of the ROM's add/subtract path that two's-complements the mantissa in place, denormalizing the FAC (5.0 came back as garbage reading about −2.5). Fixed to call fp_negop, the real unary minus.
+f_from_u8 went through fp_float, which converts a signed byte — so 200 came out as −56. Fixed to zero-extend through fp_givayf instead.
+Graphics
+
+gfx_clear: 320×240 = 76,800 bytes doesn't fit vera_fill's 16-bit count — it silently truncated to $2C00 and cleared only the top 35 rows of the screen. Fixed by clearing in two halves.
+sprite_size: a palette offset greater than 15 bled into and corrupted the size bits in the sprite attribute byte. Now masked with #$0F.
+pal_load with a count of 0: the dec/bne loop would wrap and run 256 times, shredding the entire palette. Added a zero guard.
+IRQ
+
+irq_install/irq_remove used a blind sei…cli pair, which force-enabled interrupts even if the caller had them disabled. Changed to php/plp so the caller's I flag is restored.
+File loading — the subtlest one (load.asm)
+
+fs_vload conflated two different registers: SETLFS's secondary address says how to treat the file (skip PRG header or not), while LOAD's own A register says where it goes (0 = RAM, 2/3 = VRAM banks). The code was putting 2/3 into the secondary address, which does not reach VRAM — it requests a raw, header-included load into system RAM. Reworked so the VRAM bank feeds LOAD's A register and the secondary address is forced to 0.
+BMX loader error handling (f5325b3 and 5e0c2ff)
+
+Missing file: OPEN and CHKIN both succeed for a nonexistent file — CBM DOS only surfaces "62, FILE NOT FOUND" in ST after a read is attempted. So the 16 header CHRINs returned junk, the magic check failed, and a missing file was misreported as BMX_ERR_FORMAT ("this is not a BMX") instead of an I/O error. Added a READST check after the header read.
+Truncated file: a file ending inside the palette, the gap, or mid-pixel-data went undetected. Added READST checks — once per row rather than per byte (a per-pixel check would roughly double load time), with EOF being expected after the final row since the last pixel is the last byte of the file.

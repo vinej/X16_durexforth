@@ -17,7 +17,7 @@ $ACME = ".\acme\acme.exe"
 $SEED = "release\sdcard.img"          # committed FAT32 card, used as a seed
 $IMG  = "build\testcard.img"          # throwaway copy so tests don't dirty it
 
-$FORTH = "wordlist labels doloop debug ls require open accept asm turnkey compat see io dos rnd timer audio loadsave vramdisk romdisk".Split(' ')
+$FORTH = "wordlist labels doloop debug ls require open accept help asm turnkey compat see io dos rnd timer audio loadsave vramdisk romdisk".Split(' ')
 $MODS  = @("graphic","float","floatx","file","string","system","extras")   # forth\mod\ modules: on card + modcart (NEEDS)
 $TESTS = "tester testcore testcoreplus testcoreext testexception testx16 testvideo testsprite testtile testpalfx testinput testcoreadd testaudio testbank testvramdisk testloadsave testgraphic testromdisk testfloat testfile teststring testsystem testextras test 1".Split(' ')
 
@@ -34,7 +34,7 @@ $base = (Get-Content forth\base.fs -Raw) -replace "(?m)^save-pack durexfth$", "i
 
 Write-Host "==> writing sources + tests to $IMG (copy of $SEED)"
 Copy-Item $SEED $IMG -Force
-$files = @("build\base.fs") + ($FORTH | ForEach-Object { "forth\$_.fs" }) + ($MODS | ForEach-Object { "forth\mod\$_.fs" }) + ($TESTS | ForEach-Object { "test\$_.fs" })
+$files = @("build\base.fs") + ($FORTH | ForEach-Object { "forth\$_.fs" }) + ($MODS | ForEach-Object { "forth\mod\$_.fs" }) + ($TESTS | ForEach-Object { "test\$_.fs" }) + (Get-ChildItem "help\helpdoc\*.TXT" | ForEach-Object { $_.FullName })
 & $Python build\mkcard.py $IMG @files | Out-Null; if ($LASTEXITCODE) { throw "mkcard failed" }
 
 Write-Host "==> packing module cart (ROM bank 40, non-bootable) for the NEEDS test"

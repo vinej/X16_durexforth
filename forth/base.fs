@@ -254,8 +254,20 @@ hide dodoes hide (abort")
 .( require..) include require
 .( open..) include open
 .( accept..) include accept
+.( help..) include help
 
 decimal
+
+( boot hook: if an AUTORUN file exists on the card, include it before the
+  banner shows. Probed with the silent kload - a missing file prints
+  nothing. Defined BEFORE turnkey so its marker keeps it across boots. )
+start @ constant (boot0)
+: (autorun)
+  s" autorun" 2dup 2 0 $a000 (kload)
+  if included else 2drop then ;
+: (boot) (autorun) (boot0) execute ;
+' (boot) start !
+
 include turnkey
 cr
 ( free RAM = gap between here, growing up,

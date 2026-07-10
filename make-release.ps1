@@ -27,7 +27,7 @@ $ACME     = ".\acme\acme.exe"
 $MAKECART = "makecart.exe"         # invoked from emulator\
 $IMG      = "release\sdcard.img"
 
-$CORE = @("wordlist","labels","doloop","debug","ls","require","open","accept","asm","turnkey")
+$CORE = @("wordlist","labels","doloop","debug","ls","require","open","accept","help","asm","turnkey")
 $OPT  = @("compat","see","io","dos","rnd","timer","audio","loadsave","vramdisk","romdisk")
 $MODS = @("graphic","float","floatx","file","string","system","extras")    # forth\mod\ on-demand modules -> cart ROM bank 40+
 
@@ -114,7 +114,7 @@ Build-Cart full
 
 Write-Host "==> prg + sdcard image"
 Assemble-Kernel
-Populate-Card (@("forth\base.fs") + (($CORE + $OPT) | ForEach-Object { "forth\$_.fs" }) + ($MODS | ForEach-Object { "forth\mod\$_.fs" }))
+Populate-Card (@("forth\base.fs") + (($CORE + $OPT) | ForEach-Object { "forth\$_.fs" }) + ($MODS | ForEach-Object { "forth\mod\$_.fs" }) + (Get-ChildItem "help\helpdoc\*.TXT" | ForEach-Object { $_.FullName }))
 
 Write-Host "==> collecting into release\"
 Copy-Item build\durexforth.crt       release\durexforth.crt      -Force
@@ -145,6 +145,9 @@ Both cartridges carry on-demand modules in ROM (no SD card needed for them):
 
 As a RAM program (compiles the core from the card on boot):
     x16emu -prg durexforth.prg -sdcard sdcard.img
+
+sdcard.img also carries the HELP pages (HELP / HELP STRING ...) and is checked
+at boot for an AUTORUN file to include automatically.
 
 sdcard.img is a FAT32 image with the Forth source libraries and is where EDIT
 saves and INCLUDE loads your own .FS files.  On real hardware write it to an

@@ -23,7 +23,7 @@ MODE="${1:-core}"
 mkdir -p build
 
 # Core forth libs base.fs pulls in, plus (for 'full') the optional feature libs.
-CORE="wordlist labels doloop debug ls require open accept asm turnkey"
+CORE="wordlist labels doloop debug ls require open accept help asm turnkey"
 OPT="compat see io dos rnd timer audio loadsave vramdisk romdisk"
 # On-demand modules (forth/mod/): packed into ROM bank 40+ of BOTH carts,
 # loaded at runtime with NEEDS <name> (romdisk.fs, baked into both carts).
