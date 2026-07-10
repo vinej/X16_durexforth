@@ -27,7 +27,7 @@ CORE="wordlist labels doloop debug ls require open accept help asm turnkey"
 OPT="compat see io dos rnd timer audio loadsave vramdisk romdisk"
 # On-demand modules (forth/mod/): packed into ROM bank 40+ of BOTH carts,
 # loaded at runtime with NEEDS <name> (romdisk.fs, baked into both carts).
-MODS="graphic float floatx file string system extras"
+MODS="graphic float floatx file string system extras advanced advgfx bmx advsnd"
 
 echo "==> assembling kernel + boot stub"
 printf '!text "durexforth x16"\n' > build/version.asm

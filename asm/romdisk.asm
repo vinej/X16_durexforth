@@ -14,7 +14,8 @@ ROM_TO_MEM ; ( rombank off dst u -- ) copy u bytes from cart ROM bank:off
            ; (off = 0..$3FFF into the $C000 window) to low RAM dst.
            ; The copy runs across bank boundaries ($FFFF -> next bank $C000).
     ; stack: u=+0  dst=+1  off=+2  rombank=+3
-    sei
+    php
+    sei                         ; php/plp: restore the caller I flag
     lda ROM_BANK_REG
     pha                         ; save current ROM bank (0 = KERNAL)
     lda LSB+3, x                ; rombank
@@ -57,7 +58,7 @@ r2m_nb
 r2m_end
     pla
     sta ROM_BANK_REG            ; restore ROM bank
-    cli
+    plp
     inx
     inx
     inx

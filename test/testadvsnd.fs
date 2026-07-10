@@ -1,0 +1,81 @@
+\ ADVSND module tests. Requires tester.fs.
+
+marker ---testadvsnd---
+
+include audio
+include advsnd
+
+decimal
+
+: vvol ( voice -- n ) 4 * $f9c2 + 1 swap vpeek ;
+: ticks ( n -- ) 0 do env-tick loop ;
+
+cr .( testadvsnd: envelopes ) cr
+0 1 psgvol                                 \ pan both, volume 0
+40 0 255 0 1 env-start                     \ instant attack, hold forever
+T{ 1 vvol -> $e8 }T                        \ $c0 pan | 40
+1 env-stop
+T{ 1 vvol -> $c0 }T
+
+0 2 psgvol
+60 25 2 10 2 env-start                     \ ramp 25/tick, sustain 2, fall 10
+T{ 2 vvol $3f and -> 0 }T
+env-tick env-tick env-tick                 \ 25, 50, clamp at the peak
+T{ 2 vvol $3f and -> 60 }T
+env-tick env-tick env-tick env-tick        \ 2 sustain ticks, turn, 1 release
+T{ 2 vvol $3f and -> 50 }T
+20 ticks                                   \ ride the release out
+T{ 2 vvol $3f and -> 0 }T
+
+0 3 psgvol                                 \ ticked from the VSYNC slot
+40 2 255 5 3 env-start
+' env-tick irq
+100 ms
+0 irq
+T{ 3 vvol $3f and 10 > -> -1 }T
+3 env-stop
+
+cr .( testadvsnd: adpcm ) cr
+create adv1 $77 c, $77 c, $77 c, $ff c,
+create adbuf 24 allot
+adpcm-init
+T{ adv1 adbuf 4 adpcm>pcm adbuf - -> 8 }T
+T{ adbuf c@  adbuf 3 + c@  adbuf 4 + c@  adbuf 5 + c@ -> 0 0 2 4 }T
+T{ adbuf 6 + c@  adbuf 7 + c@ -> 255 243 }T
+T{ ad-x @ -> 64 }T
+T{ -3103 64 adpcm! ad-p @ -> 29665 }T      \ WAV block header restore
+create adv2 10 allot  adv2 10 $77 fill
+adpcm-init
+adv2 adbuf 10 adpcm>pcm drop               \ pump until it saturates
+T{ adbuf 18 + c@  adbuf 19 + c@ -> 127 127 }T
+T{ ad-p @  ad-x @ -> $ffff 88 }T
+
+cr .( testadvsnd: pcm streaming ) cr
+variable bnk0  0 c@ bnk0 !
+: mkpcm ( -- ) 0 c@ >r                     \ silence in banks 2 and 3
+  2 0 c! $a000 8192 0 fill
+  3 0 c! $a000 8192 0 fill
+  r> 0 c! ;
+mkpcm
+$83 pcmctrl                                \ reset FIFO, 8-bit mono, volume 3
+0 pcm-loop !
+2 $a000 12000 0 128 pcm-play               \ 12000 bytes across the bank seam
+T{ pcm-playing? -> -1 }T
+T{ $9f26 c@ 8 and -> 8 }T                  \ AFLOW armed
+400 ms
+T{ pcm-playing? -> 0 }T                    \ data gone: auto-disarmed
+T{ $9f26 c@ 8 and -> 0 }T
+T{ 0 c@ bnk0 @ = -> -1 }T                  \ refills left the RAM bank alone
+
+1 pcm-loop !                               \ a looping stream never runs dry
+2 $a000 2000 0 64 pcm-play
+100 ms
+T{ pcm-playing? -> -1 }T
+pcm-stop
+0 pcm-loop !
+T{ pcm-playing? -> 0 }T
+T{ $9f26 c@ 8 and -> 0 }T
+
+cr .( testadvsnd ok ) cr
+
+---testadvsnd---

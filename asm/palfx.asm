@@ -126,16 +126,52 @@ fx_fill_core
     sta $9f2c
     lda #$04
     sta VERA_CTRL               ; DCSEL=2, ADDRSEL=0
-    lda #$40
-    sta $9f29                   ; FX_CTRL = Cache Write Enable
+    stz $9f29                   ; FX off for the leading bytes
     lda LSB+1, x                ; vaddr low
     sta $9f20
     lda MSB+1, x                ; vaddr high
     sta $9f21
     lda LSB+2, x                ; vbank -> address bit 16
     and #1
-    ora #$30                    ; auto-increment +4 (code 3, bits 7:4)
+    ora #$10                    ; +1 increment for the lead
     sta $9f22                   ; ADDR0_H
+    ; VERA cache writes hit the ALIGNED quad (the 2 low address bits are
+    ; ignored), so an unaligned start would clobber up to 3 bytes BEFORE
+    ; the span. Write 0-3 leading bytes plainly until 4-byte aligned.
+    lda LSB+1, x
+    and #3
+    beq fxf_lead_done           ; already aligned
+    eor #3
+    inc                         ; lead = (4 - (vaddr & 3)) & 3
+    sta W2
+    lda MSB, x                  ; clamp lead to the count
+    bne fxf_lead_ok
+    lda LSB, x
+    cmp W2
+    bcs fxf_lead_ok
+    sta W2
+fxf_lead_ok
+    sec                         ; count -= lead
+    lda LSB, x
+    sbc W2
+    sta LSB, x
+    lda MSB, x
+    sbc #0
+    sta MSB, x
+    ldy W2
+    beq fxf_lead_done
+    lda W3
+fxf_lead_lp
+    sta $9f23                   ; plain byte writes, addr+=1
+    dey
+    bne fxf_lead_lp
+fxf_lead_done
+    lda LSB+2, x                ; now aligned: cache writes, +4
+    and #1
+    ora #$30                    ; auto-increment +4 (code 3, bits 7:4)
+    sta $9f22
+    lda #$40
+    sta $9f29                   ; FX_CTRL = Cache Write Enable
     lda LSB, x                  ; rem = count & 3
     and #3
     sta W2

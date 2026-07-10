@@ -37,6 +37,25 @@ icnt @
 100 ms
 T{ icnt @ swap - -> 0 }T                          \ disarmed: counter frozen
 
+cr .( testsystem: line-irq - per-scanline word ) cr
+variable lcnt  0 lcnt !
+: ltick 1 lcnt +! ;
+' ltick 100 line-irq
+300 ms                                            \ ~18 frames, one hit each
+0 0 line-irq
+T{ lcnt @ 3 120 within -> -1 }T
+lcnt @
+100 ms
+T{ lcnt @ swap - -> 0 }T                          \ disarmed: frozen
+
+cr .( testsystem: sprcol-irq arm/disarm + collisions ) cr
+T{ collisions -> 0 }T
+' itick sprcol-irq
+50 ms
+0 sprcol-irq
+T{ depth -> 0 }T
+T{ ' aflow-irq 0<> -> -1 }T                       \ exists (armed only by ADVSND)
+
 cr .( testsystem: irq preserves W across the armed word ) cr
 variable ierr  0 ierr !
 : iw 77 99 um* 2drop 300 9 / drop ;               \ hammer the W-using natives

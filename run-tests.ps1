@@ -18,8 +18,8 @@ $SEED = "release\sdcard.img"          # committed FAT32 card, used as a seed
 $IMG  = "build\testcard.img"          # throwaway copy so tests don't dirty it
 
 $FORTH = "wordlist labels doloop debug ls require open accept help asm turnkey compat see io dos rnd timer audio loadsave vramdisk romdisk".Split(' ')
-$MODS  = @("graphic","float","floatx","file","string","system","extras")   # forth\mod\ modules: on card + modcart (NEEDS)
-$TESTS = "tester testcore testcoreplus testcoreext testexception testx16 testvideo testsprite testtile testpalfx testinput testcoreadd testaudio testbank testvramdisk testloadsave testgraphic testromdisk testfloat testfile teststring testsystem testextras test 1".Split(' ')
+$MODS  = @("graphic","float","floatx","file","string","system","extras","advanced","advgfx","bmx","advsnd")   # forth\mod\ modules: on card + modcart (NEEDS)
+$TESTS = "tester testcore testcoreplus testcoreext testexception testx16 testvideo testsprite testtile testpalfx testinput testcoreadd testaudio testbank testvramdisk testloadsave testgraphic testromdisk testfloat testfile teststring testsystem testextras testadv testadvgfx testbmx testadvsnd test 1".Split(' ')
 
 New-Item -ItemType Directory -Force build | Out-Null
 

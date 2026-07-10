@@ -40,6 +40,10 @@ page parse-name testfile included
 page parse-name teststring included
 page parse-name testsystem included
 page parse-name testextras included
+page parse-name testadv included
+page parse-name testadvgfx included
+page parse-name testbmx included
+page parse-name testadvsnd included
 
 \ include-mechanism smoke test (loads the file "1")
 :noname s" include 1 2" evaluate

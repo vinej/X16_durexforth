@@ -16,8 +16,8 @@ marker ---audio---
 
 \ --- VERA PCM FIFO (AUDIOPCM, direct registers) ---
 : pcmctrl ( n -- ) $9f3b c! ;            \ AUDIO_CTRL (bit7 write = reset FIFO)
-: pcmrate ( n -- ) $9f3d c! ;            \ AUDIO_RATE (0 = stop .. 128 = 48 kHz)
-: pcm! ( byte -- ) $9f3c c! ;            \ push one sample byte
+: pcmrate ( n -- ) $9f3c c! ;            \ AUDIO_RATE (0 = stop .. 128 = 48 kHz)
+: pcm! ( byte -- ) $9f3d c! ;            \ push one sample byte
 : pcmfull? ( -- flag ) $9f3b c@ $80 and 0<> ;
 : pcm-write ( addr count -- ) 0 do dup c@ pcm! 1+ loop drop ;
 

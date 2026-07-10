@@ -29,7 +29,7 @@ $IMG      = "release\sdcard.img"
 
 $CORE = @("wordlist","labels","doloop","debug","ls","require","open","accept","help","asm","turnkey")
 $OPT  = @("compat","see","io","dos","rnd","timer","audio","loadsave","vramdisk","romdisk")
-$MODS = @("graphic","float","floatx","file","string","system","extras")    # forth\mod\ on-demand modules -> cart ROM bank 40+
+$MODS = @("graphic","float","floatx","file","string","system","extras","advanced","advgfx","bmx","advsnd")    # forth\mod\ on-demand modules -> cart ROM bank 40+
 
 New-Item -ItemType Directory -Force build, release | Out-Null
 
