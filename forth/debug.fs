@@ -22,8 +22,10 @@ last-dump ! base ! ;
 : n last-dump @ dump ;
 hide last-dump
 
+\ pause on a full screen: tblx ($0383) = cursor row, nlinesm1 ($0389) =
+\ the current mode's last row (60/30-line modes both work)
 : more
-$0383 c@ $18 = if $12 emit
+$0383 c@ $0389 c@ = if $12 emit
 ." more" $92 emit key drop page then ;
 
 : name>string ( nametoken -- caddr u )

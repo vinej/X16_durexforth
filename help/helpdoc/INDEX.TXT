@@ -24,13 +24,13 @@ Type  HELP <topic>   e.g.  HELP STACK
  GRAPHIC     GINIT PSET LINE RECT OVAL GTEXT + pen API
  TILE        TILE TDATA TATTR  (layer-1 tilemap cells)
  PAL         PAL!  (palette entry)
- GAME        VSYNC FRAMES VFILL COLLIDE? *.  RND
  INPUT       JOY MOUSE MX MY MB MWHEEL
  KEYBOARD    KEY? GETKEY CHARSET KEYMAP
  AUDIOFM     PSG & YM2151 FM  FMINIT FMNOTE PSGNOTE ...
  AUDIOYM     raw YM2151 register access  YM! FMPOKE
  AUDIOPCM    PCM FIFO  PCMCTRL PCMRATE PCM! PCM-WRITE
  VERAFX      VERA FX  DCSEL FX-MULT  (+ VERAFX toolkit)
+ ADVANCED    game math, rotozoom, streaming sound, BMX (modules)
  LOADSAVE    LOAD SAVE VLOAD VSAVE BLOAD SPRSAVE ...
  BANK        bulk RAM-bank I/O  BANKLOAD BANK>MEM ...
  IMAGE       SAVE-IMAGE LOAD-IMAGE  (fast turnkey reload)
@@ -39,6 +39,4 @@ Type  HELP <topic>   e.g.  HELP STACK
  FLOAT       S>F F+ F* FSQRT FSIN F. ...   (FLOAT.FTH)
  BIT         SPLIT CATNIB SBIT CBIT FBIT
  ASSEMBLER   inline 6502 assembler  CODE ... END-CODE
- TOOLKIT     build the TK.* fast-load image + AUTORUN.FTH
- ASMIRQ      assembly VSYNC interrupt demo
 ==============================================================
