@@ -1,7 +1,7 @@
 \ Regression tests specific to the Commander X16 port:
 \ number parsing across bases, the relocated zero-page parameter
 \ stack, the golden-RAM buffers pad and hold, and the 6502/65C02
-\ inline assembler. Requires tester.fs and testcore.fs (<TRUE>).
+\ inline assembler. Requires tester.fs (and compat true).
 
 marker ---testx16---
 
@@ -24,9 +24,9 @@ T{ 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 + + + + + + + + + + + + + + -> 120 }T
 T{ sum1-29 -> 435 }T
 
 cr .( testx16: pad buffer ) cr
-T{ pad 200 + pad u> -> <TRUE> }T
+T{ pad 200 + pad u> -> true }T
 T{ 65 pad c! pad c@ -> 65 }T
-T{ pad here u< -> <TRUE> }T
+T{ pad here u< -> true }T
 
 cr .( testx16: number formatting ) cr
 : fmt 0 <# #s #> ;

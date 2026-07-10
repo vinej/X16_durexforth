@@ -1,35 +1,43 @@
 === FILE - Files ===
 
+INCLUDE/REQUIRE and the DOS words are always resident.  The ANS file word set
+is an on-demand module - cart: NEEDS FILE, SD card: INCLUDE FILE.
+fileid = KERNAL logical file 2..7 (up to 6 files open at once); positioning
+uses the CBDOS P (seek) and T (tell) commands, so it needs the FAT32 SD card.
 File access methods combine with BIN: e.g. R/O BIN.
 
 [x] INCLUDE ( "name" -- ) - load and interpret a file by name. INCLUDE GAME.FTH
 [x] INCLUDED ( addr len -- ) - load and interpret the file named by a string. S"
     GAME.FTH" INCLUDED
-[ ] INCLUDE-FILE ( fileid -- ) - interpret an already-open file.
+[x] INCLUDE-FILE ( fileid -- ) - interpret the rest of an already-open file
+    (max 8 KB; staged in the highest RAM bank; do not nest).
 [x] REQUIRE ( "name" -- ) - include a file only once, by name.
 [x] REQUIRED ( addr len -- ) - include a file only once, by string.
-[ ] OPEN-FILE ( addr len fam -- fileid ior ) - open a file; ior 0 = success.
-[ ] CLOSE-FILE ( fileid -- ior ) - close a file.
-[ ] CREATE-FILE ( addr len fam -- fileid ior ) - create/overwrite a file.
-[ ] DELETE-FILE ( addr len -- ior ) - delete a file.
-[ ] RENAME-FILE ( a1 u1 a2 u2 -- ior ) - rename.
-[ ] RESIZE-FILE ( ud fileid -- ior ) - set a file's size.
-[ ] READ-FILE ( addr u fileid -- u2 ior ) - read up to u bytes.
-[ ] WRITE-FILE ( addr u fileid -- ior ) - write u bytes.
-[ ] READ-LINE ( addr u fileid -- u2 flag ior ) - read a line.
-[ ] WRITE-LINE ( addr u fileid -- ior ) - write a line + newline.
-[ ] FILE-POSITION ( fileid -- ud ior ) / REPOSITION-FILE ( ud fileid -- ior ) -
-    get/set position.
-[ ] FILE-SIZE ( fileid -- ud ior ) - size in bytes.
-[ ] FILE-STATUS ( addr len -- x ior ) - query a named file.
-[ ] FLUSH-FILE ( fileid -- ior ) - flush buffers.
-[ ] R/O ( -- fam ) read-only, W/O write-only, R/W read/write, BIN ( fam -- fam )
-    binary modifier.
+[x] OPEN-FILE ( addr len fam -- fileid ior ) - open a file; ior 0 = success.
+[x] CLOSE-FILE ( fileid -- ior ) - close a file.
+[x] CREATE-FILE ( addr len fam -- fileid ior ) - create/overwrite a file (R/W
+    creates, then reopens in CBDOS modify mode).
+[x] DELETE-FILE ( addr len -- ior ) - delete a file (DOS S: command).
+[x] RENAME-FILE ( a1 u1 a2 u2 -- ior ) - rename a1/u1 to a2/u2 (DOS R:new=old).
+[x] RESIZE-FILE ( ud fileid -- ior ) - unsupported on CBDOS: always ior -1.
+[x] READ-FILE ( addr u fileid -- u2 ior ) - read up to u bytes.
+[x] WRITE-FILE ( addr u fileid -- ior ) - write u bytes.
+[x] READ-LINE ( addr u fileid -- u2 flag ior ) - read a line (ends at CR or LF;
+    flag false only at end of file).
+[x] WRITE-LINE ( addr u fileid -- ior ) - write u bytes + CR.
+[x] FILE-POSITION ( fileid -- ud ior ) / REPOSITION-FILE ( ud fileid -- ior ) -
+    get/set position (CBDOS T / P commands).
+[x] FILE-SIZE ( fileid -- ud ior ) - size in bytes (CBDOS T command).
+[x] FILE-STATUS ( addr len -- x ior ) - query a named file (x = 0; ior 0 =
+    the file exists).
+[x] FLUSH-FILE ( fileid -- ior ) - no-op (CBDOS flushes on close).
+[x] R/O ( -- fam ) read-only, W/O write-only, R/W read/write (CBDOS modify
+    mode - the file must exist), BIN ( fam -- fam ) binary modifier (no-op).
 
 --- X16 directory navigation (device 8) ---
-[ ] CD  ( c-addr u -- )   change directory (sends "CD:<name>" to the DOS).
+[x] CD  ( c-addr u -- )   change directory (sends "CD:<name>" to the DOS).
                       S" .." CD goes up;  S" /" CD goes to the root.
-[ ] DIR ( -- )            list the current directory.
+[x] DIR ( -- )            list the current directory.
 
 --- durexForth: disk / DOS command channel ---
 [x] DEVICE ( n -- ) - set the current disk device number (default 8).

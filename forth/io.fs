@@ -1,14 +1,18 @@
+\ Channel words. The Forth stack pointer is saved on the hardware stack,
+\ NOT in zeropage: the X16 kernal's channel calls can far-call into CBDOS
+\ and clobber zp workspace (the C64-era "w stx," pattern crashed).
+
 \ Use logical file as input device
 \ ioresult is 0 on success, kernal
 \ error # on failure.
 code chkin ( file# -- ioresult )
-w stx,
+txa, pha,
 lsb lda,x tax, \ x = file#
 $ffc6 jsr, \ CHKIN
 +branch bcs, \ carry set = error
 0 lda,# \ A is only valid on error
 :+
-w ldx,
+tay, pla, tax, tya,
 lsb sta,x
 0 lda,# msb sta,x
 rts, end-code
@@ -17,13 +21,13 @@ rts, end-code
 \ ioresult is 0 on success, kernal
 \ error # on failure.
 code chkout ( file# -- ioresult )
-w stx,
+txa, pha,
 lsb lda,x tax, \ x = file#
 $ffc9 jsr, \ CHKOUT
 +branch bcs, \ carry set = error
 0 lda,# \ A is only valid on error
 :+
-w ldx,
+tay, pla, tax, tya,
 lsb sta,x
 0 lda,# msb sta,x
 rts, end-code
@@ -37,14 +41,18 @@ rts, end-code
 
 \ Read status of last IO operation
 code readst ( -- status )
-dex, 0 lda,# msb sta,x
+txa, pha,
 $ffb7 jsr, \ READST
+tay, pla, tax, dex, tya,
 lsb sta,x
+0 lda,# msb sta,x
 rts, end-code
 
 \ Get a byte from input device
 code chrin ( -- chr )
-dex, w stx, 0 lda,# msb sta,x
+txa, pha,
 $ffcf jsr, \ CHRIN
-w ldx, lsb sta,x
+tay, pla, tax, dex, tya,
+lsb sta,x
+0 lda,# msb sta,x
 rts, end-code

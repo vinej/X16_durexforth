@@ -24,9 +24,9 @@ FORTH="wordlist labels doloop debug ls require open accept asm turnkey \
        compat see io dos rnd timer audio loadsave vramdisk romdisk"
 # Cart ROM modules (forth/mod/): packed into build/modcart.crt for the NEEDS
 # test AND written to the card so `include <mod>` works too.
-MODS="graphic float floatx"
+MODS="graphic float floatx file"
 # Test-suite files.
-TESTS="tester testcore testcoreplus testcoreext testexception testx16 testvideo testsprite testtile testpalfx testinput testcoreadd testaudio testbank testvramdisk testloadsave testgraphic testromdisk testfloat test 1"
+TESTS="tester testcore testcoreplus testcoreext testexception testx16 testvideo testsprite testtile testpalfx testinput testcoreadd testaudio testbank testvramdisk testloadsave testgraphic testromdisk testfloat testfile test 1"
 
 echo "==> assembling kernel"
 mkdir -p build

@@ -36,7 +36,7 @@ echo "    durexforth.prg = $(stat -c%s build/durexforth.prg) bytes"
 echo "==> writing sources to $IMG"
 FILES=""
 for n in $SRCS; do FILES="$FILES forth/$n.fs"; done
-FILES="$FILES forth/mod/graphic.fs forth/mod/float.fs forth/mod/floatx.fs"  # modules also usable via INCLUDE
+FILES="$FILES forth/mod/graphic.fs forth/mod/float.fs forth/mod/floatx.fs forth/mod/file.fs"  # modules also usable via INCLUDE
 "$PY" build/mkcard.py "$IMG" $FILES
 
 if [ "${1:-}" = "run" ]; then

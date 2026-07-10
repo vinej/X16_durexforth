@@ -24,10 +24,22 @@ K_SPACE = ' '
 ; parameter stack is placed just above it.
 LSB = $41 ; low-byte stack placed in [$09 .. $40]
 MSB = $79 ; high-byte stack placed in [$41 .. $78]
-W = $8b ; rnd seed        \  Temporary work area
-W2 = $8d ; rnd seed        ) available for words.
-W3 = $9e ; tape error log /  Each two bytes.
-TIB = $400 ; text input buffer (X16 golden RAM $0400-$07ff)
+; Temporary work areas for words, two bytes each.  These MUST stay outside
+; the X16 ROM's own zeropage segments (ZPKERNAL $80-$90, ZPDOS $91-$9B,
+; ZPAUDIO $A7-$A8, ZPMATH $A9-$D3, ZPBASIC $D4-$FE): the C64 port had W at
+; $8B, and any code word that parked the Forth stack pointer in W across a
+; KERNAL call (open, chkin, ...) got it clobbered by CBDOS and crashed with
+; a "stack" error.  $9C-$A6 is claimed by no ROM bank.
+W = $9c
+W2 = $9e ; must stay at W+2: some words use W..W2+1 as one 4-byte area
+W3 = $a0
+TIB = $600 ; text input buffer (X16 golden RAM; $600-$7ff = 512 bytes)
+; TIB grows upward as nested INCLUDEs stack their current lines, so it gets
+; the top 512-byte run of golden RAM all to itself.  It must NOT sit at $400:
+; FIND_BUFFER lives at $480 and the HOLD area at $500-$5fc, and a nested
+; include whose accumulated lines crossed $480 had its still-unparsed text
+; overwritten by every word lookup (garbled-token errors in long-lined,
+; deeply-included files).
 PROGRAM_BASE = $801
 ;HERE_POSITION = $801 + assembled program (defined below)
 WORDLIST_BASE = $9eff ; below X16 I/O area ($9f00-$9fff)

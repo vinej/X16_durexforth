@@ -12,9 +12,15 @@ marker ---test---
 
 page parse-name compat included
 page parse-name tester included
+\ The ANS core tests define helper constants without a marker - including MSB,
+\ which SHADOWS the assembler's stack-page constant and silently breaks every
+\ CODE word compiled afterwards (sta $8000,x instead of the high-byte stack).
+\ Bracket them so all that leaks away before the X16 tests run.
+marker ---coretests---
 page parse-name testcore included
 page parse-name testcoreplus included
 page parse-name testcoreext included
+---coretests---
 page parse-name testexception included
 page parse-name testx16 included
 page parse-name testvideo included
@@ -30,6 +36,7 @@ page parse-name testloadsave included
 page parse-name testgraphic included
 page parse-name testromdisk included
 page parse-name testfloat included
+page parse-name testfile included
 
 \ include-mechanism smoke test (loads the file "1")
 :noname s" include 1 2" evaluate

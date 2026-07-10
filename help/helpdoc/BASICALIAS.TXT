@@ -6,7 +6,7 @@ share the corresponding FP word's body under a BASIC name.
 
 [x] OPEN ( c-addr u fam -- fileid ior ) - open a file (like OPEN-FILE).
 [x] CLOSE ( fileid -- ior ) - close a file.
-[ ] LINPUT ( c-addr +n -- +n2 ) - read a line from the keyboard into a buffer.
+
 The BASIC math names below are not in the core - they only duplicated the
 F* words, so they live in toolkit/FPX.FTH (with the extended FP set). Load
 them with INCLUDE FPX.FTH (after FLOAT.FTH; or just use FSQRT/FSIN/...
@@ -29,6 +29,7 @@ These carry no trailing $ (unlike BASIC) so the names are valid Forth;
 use an N prefix because HEX and BIN are core words (HEX sets BASE=16, BIN is
     the file mode).
 
+[ ] LINPUT ( c-addr +n -- +n2 ) - read a line from the keyboard into a buffer.
 [ ] NHEX ( u -- c-addr u ) - number as hexadecimal digits. 255 NHEX TYPE  ->  FF
 [ ] NBIN ( u -- c-addr u ) - number as binary digits. 5 NBIN TYPE  ->  101
 [ ] STR ( n -- c-addr u ) - signed number as a string (current base). -12 STR TYPE

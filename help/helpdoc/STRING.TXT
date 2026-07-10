@@ -14,3 +14,22 @@
 [x] CHAR ( "c" -- n ) - code of the next character (interpreting). CHAR A  ->  65
 [x] [CHAR] ( "c" -- ) - compile the code of the next character (in a definition).
     [CHAR] *
+[ ] LINPUT ( c-addr +n -- +n2 ) - read a line from the keyboard into a buffer.
+[ ] NHEX ( u -- c-addr u ) - number as hexadecimal digits. 255 NHEX TYPE  ->  FF
+[ ] NBIN ( u -- c-addr u ) - number as binary digits. 5 NBIN TYPE  ->  101
+[ ] STR ( n -- c-addr u ) - signed number as a string (current base). -12 STR TYPE
+    ->  -12
+[ ] VAL ( c-addr u -- n ) - string to number (current base). S" 42" VAL .  ->  42
+[ ] ASC ( c-addr u -- code ) - code of the first character.
+[ ] CHR ( code -- c-addr 1 ) - one-character string (in PAD). 65 CHR TYPE  ->  A
+[ ] LEN ( c-addr u -- u ) - string length (returns the count).
+[ ] LEFT ( c-addr u n -- c-addr n2 ) - first n characters.
+[ ] RIGHT ( c-addr u n -- c-addr2 n2 ) - last n characters.
+[ ] MID ( c-addr u start len -- c-addr2 len2 ) - substring; start is 1-based. S"
+    HELLO" 2 3 MID TYPE  ->  ELL
+[ ] RPT ( char n -- c-addr u ) - a character repeated n times (in PAD). [CHAR] * 5
+    RPT TYPE  ->  *
+[ ] SLITERAL ( addr len -- ) - compile a string literal.
+[x] TIB ( -- addr ) - the terminal input buffer.
+[ ] #TIB ( -- addr ) - variable: number of characters in TIB.
+[ ] GETKEY ( -- char )   block until a key is pressed, return its PETSCII code.
