@@ -1,32 +1,56 @@
-=== ASSEMBLER - inline 6502 assembler (ASSEMBLER.FTH) ===
+=== ASSEMBLER - the inline 6502 assembler (asm.fs, always resident) ===
 
-Define machine-code words with CODE ... END-CODE (Ragsdale FIG assembler).
-Load:  S" ASSEMBLER.FTH" INCLUDED
+Define machine-code words with CODE ... END-CODE.  Everything between them
+assembles directly into the dictionary; finish the code with RTS,.
 
-  CODE name  <6502 opcodes, mnemonic-first, trailing comma>  NEXT JMP,  END-CODE
+[x] CODE ( "name" -- )  begin a machine-code word.
+[x] END-CODE ( -- )     finish it.
 
-Opcodes end in a comma (LDA, STA, INX, ...). Operand first, then an addressing
-mode word, then the opcode:
-  n # LDA,      immediate        addr LDA,     memory (zp/abs auto)
-  addr ,X LDA,  indexed X        addr ,Y LDA,  indexed Y
-  addr X) LDA,  (zp,X)           addr )Y LDA,  (zp),Y
-  addr ) JMP,   indirect         .A ROL,       accumulator
-Structured flow (comma!): BEGIN, UNTIL, IF, ELSE, THEN, with condition
-prefixes BEQ: BNE: BCC: BCS: BMI: BPL: BVC: BVS: (named for the branch taken).
-Registers: DTOP (TOS), N (scratch), POP/PUSH (pop/push a cell in A=lo X=hi),
-NEXT (end each word with NEXT JMP,). Full detail: user guide Section 6.
+Syntax: the OPERAND comes first, then a mnemonic ending in a comma; the
+suffix after the comma is the addressing mode:
+    5 lda,#          LDA #5           immediate
+    $9f20 lda,       LDA $9F20        absolute or zeropage (auto-sized)
+    lsb lda,x        LDA LSB,x        absolute/zp indexed by X ( ,y too )
+    w lda,(y)        LDA (W),y        indirect indexed      ( ,(x) too )
+    asl,a            ASL A            accumulator: asl,a lsr,a rol,a ror,a
+    $1234 jmp,       JMP $1234        w (jmp),  =  JMP (W) indirect
+    inx, dey, pha, php, sei, rts, ...  single-byte ops
+Only the NMOS 6502 set is provided - there is NO bra, stz, phx etc.
+(emit raw 65C02 bytes with C, if you must).
 
---- durexForth inline assembler (asm.fs, always present) ---
-durexForth's own assembler is mnemonic-first with a trailing comma and the
-operand pushed before it: e.g.  $d020 lda,x  =  LDA $d020,X . It provides the
-full 6502 mnemonic set as words - lda, sta, ldx, cmp, jsr, jmp, rts, inx, ...
-each with addressing-mode suffixes:  ,#  (immediate)  ,x  ,y  (indexed)
-,(x) ,(y) (indirect indexed)  ,a (accumulator).  Local branches use the
-labels helper (labels.fs).
-[x] CODE ( "name" -- ) - begin a machine-code word; assemble opcodes until END-CODE.
-[x] END-CODE ( -- ) - finish a CODE word.
-[x] W ( -- addr ) - scratch work area 1 (2 bytes) for code words.
-[x] W2 ( -- addr ) - scratch work area 2.
-[x] W3 ( -- addr ) - scratch work area 3.
-[x] LSB ( -- addr ) - zeropage base of the parameter-stack low-byte array (index with ,x).
-[x] MSB ( -- addr ) - zeropage base of the parameter-stack high-byte array.
+THE DATA STACK: the X register is the stack pointer.  A cell's low byte is
+at LSB,x and its high byte at MSB,x (two zeropage arrays).
+    lsb lda,x  msb ldy,x     read the top cell into A (lo) / Y (hi)
+    inx,                     drop one cell
+    dex,  ... sta,x ...      push one cell (store both halves!)
+[x] LSB / MSB ( -- addr )   the array bases.
+[x] W W2 W3 ( -- addr )     three 16-bit zeropage scratch cells, saved
+                        around IRQ words by the dispatcher.
+
+FLOW (branch labels):
+    :-              mark a backward target
+    -branch bne,    branch back to it (any b??, works)
+    +branch beq,    start a forward branch ...
+    :+              ... and resolve it here
+Nest forward branches strictly LIFO: resolve the innermost :+ first.
+A BEGIN..UNTIL loop is  :- ... -branch beq,   an IF..THEN is
++branch bne, ... :+  (note the branch takes the OPPOSITE condition).
+
+VARIABLES: a VARIABLE name pushes its address while assembling, so it
+works directly as an operand:
+    variable ticks
+    code tick+ ( -- )  ticks inc,  rts, end-code
+
+CALLING THE KERNAL: ROM routines clobber X (your stack pointer!) and
+zeropage - save X on the hardware stack around the call:
+    txa, pha,   $ffd2 jsr,   pla, tax,
+
+Example - pop two cells, push their sum:
+    code sum2 ( a b -- a+b )
+    clc,
+    lsb lda,x  lsb 1+ adc,x  lsb 1+ sta,x
+    msb lda,x  msb 1+ adc,x  msb 1+ sta,x
+    inx,
+    rts, end-code
+
+More worked examples (flow, loops, KERNAL): tutorial/userguide.md sec. 42.

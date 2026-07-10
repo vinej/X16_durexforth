@@ -1654,39 +1654,122 @@ FLAG @ X 4 FBIT        \ set-or-clear by flag ( flag addr mask -- )
 
 ## 42. ASSEMBLER — machine-code words
 
-durexForth's inline assembler (always present) is mnemonic-first with a
-trailing comma; the operand comes before the mnemonic:
+durexForth's inline assembler is part of the core (asm.fs — always
+present). The syntax is *operand first*, then a mnemonic ending in a
+comma; the suffix after the comma is the addressing mode:
+
+```forth
+5 lda,#          \ LDA #5        immediate
+$9f20 lda,       \ LDA $9F20     absolute or zeropage (size picked for you)
+lsb lda,x        \ LDA LSB,x     indexed by X (,y likewise)
+w lda,(y)        \ LDA (W),y     indirect indexed (,(x) likewise)
+asl,a            \ ASL A         accumulator: asl,a lsr,a rol,a ror,a
+w (jmp),         \ JMP (W)       indirect jump
+inx, pha, sei, rts,              \ single-byte ops
+```
+
+Only the plain-6502 mnemonic set exists — **no 65C02 extras** (`bra,`,
+`stz,`, `phx,` are not words; emit raw bytes with `C,` if you truly need
+one).
+
+### Anatomy of a code word
+
+The X register is the **data-stack pointer**. A cell's low byte lives at
+`LSB,x`, its high byte at `MSB,x`. `inx,` drops a cell, `dex,` makes room
+to push one (always store both halves!).
 
 ```forth
 code 2* ( n -- n*2 )
-lsb asl,x        \ ASL LSB,x — the stack low-byte array, X = stack pointer
-msb rol,x        \ ROL MSB,x
+lsb asl,x        \ shift the low byte, carry out...
+msb rol,x        \ ...into the high byte
 rts,
 end-code
+
+code sum2 ( a b -- a+b )         \ pop one cell, rewrite the next
+clc,
+lsb lda,x  lsb 1+ adc,x  lsb 1+ sta,x    \ LSB,x = top, LSB+1,x = second
+msb lda,x  msb 1+ adc,x  msb 1+ sta,x
+inx,                                      \ drop the old top
+rts, end-code
 ```
 
-- The data stack is split: `LSB` and `MSB` are zeropage arrays indexed by
-  the X register (X = stack pointer; `dex,` pushes, `inx,` pops).
-- `W W2 W3` are 16-bit scratch cells free for code words.
-- Addressing modes are suffixes: `lda,#` immediate, `lda,x` indexed,
-  `w lda,(y)` indirect-indexed, plain `lda,` absolute/zp.
-- Branches: `:-` marks a backward target for `-branch bne,`;
-  `+branch beq,` … `:+` patches a forward branch.
-- If a code word calls the KERNAL, save X on the hardware stack first
-  (`txa, pha,` … `pla, tax,`) — ROM routines clobber it.
+`W W2 W3` are three 16-bit zeropage scratch cells reserved for code words
+(the IRQ dispatcher saves them, so they are interrupt-safe).
 
-There is also a classic FIG-style assembler on the card
-(`S" ASSEMBLER.FTH" INCLUDED`) with `CODE ... NEXT JMP, END-CODE`
-conventions; see HELP ASSEMBLER.
+### Using Forth VARIABLEs from code
+
+A `VARIABLE` name pushes its address *while the assembler is reading your
+code*, so it drops straight in as an operand — the natural way to keep
+state or loop counters that survive between calls:
+
+```forth
+variable ticks
+code tick+ ( -- )                \ ticks 1+! in machine code
+ticks inc,
++branch bne,                     \ low byte wrapped? bump the high byte
+ticks 1+ inc,
+:+
+rts, end-code
+```
+
+The same works for `CREATE`d tables: `mytable lda,y` indexes a table by Y.
+
+### Flow: IF/THEN and BEGIN/UNTIL in code
+
+Two label words give you structured flow. `:-` marks a backward target
+that `-branch <branch>` jumps to; `+branch <branch>` opens a forward
+branch that `:+` lands. Remember the branch takes the **opposite**
+condition of the Forth word you are imitating:
+
+```forth
+\ IF..THEN:  skip when the condition is FALSE
+lsb lda,x  msb ora,x             \ top cell zero?
++branch beq,                     \ IF ( skip forward when Z set )
+  ...                            \ the "true" part
+:+                               \ THEN
+
+\ BEGIN..UNTIL:  a countdown loop ( n -- ), n >= 1
+code stars ( n -- )              \ print n asterisks (n = 1..255)
+lsb lda,x w sta,                 \ borrow W as the counter
+inx,
+:-                               \ BEGIN
+txa, pha,  '*' lda,#  $ffd2 jsr,  pla, tax,   \ CHROUT (see below)
+w dec,
+-branch bne,                     \ UNTIL the counter hits 0
+rts, end-code
+```
+
+Nest forward branches strictly **LIFO** — the innermost `+branch` must
+meet its `:+` before an outer one is resolved. (Backward `:-` targets are
+plain values on the stack during assembly; if you interleave them with
+pending forwards, keep the bookkeeping straight or restructure — a
+post-tested loop with the zero-case handled in Forth is usually simpler.)
+
+### Calling the KERNAL
+
+ROM routines clobber X — your stack pointer! — and much of zeropage. Save
+X on the hardware stack around every `jsr,` into the ROM:
+
+```forth
+code emit* ( -- )                \ CHROUT a star
+txa, pha,
+'*' lda,#  $ffd2 jsr,
+pla, tax,
+rts, end-code
+```
+
+If the routine needs values in registers, load them from `LSB,x`/`MSB,x`
+*before* the `txa, pha,` (or park them in `W`).
 
 ### Word reference
 
 - `CODE ( "name" -- )` / `END-CODE ( -- )` — bracket a machine-code word; finish the code with `rts,`.
-- `LSB / MSB ( -- addr )` — zeropage bases of the split data stack; index with the X register (`lsb lda,x` reads the top's low byte). `dex,` pushes a cell slot, `inx,` pops.
+- `LSB / MSB ( -- addr )` — zeropage bases of the split data stack; index with the X register (`lsb lda,x` = the top's low byte, `lsb 1+ lda,x` = the second cell's). `dex,` pushes a cell slot, `inx,` pops.
 - `W W2 W3 ( -- addr )` — three 16-bit zeropage scratch cells, saved by the IRQ dispatcher.
-- Mnemonics are words ending in a comma; the operand comes first: `5 lda,#` (immediate), `$9F20 lda,` (absolute/zp), `lsb lda,x` (indexed), `w lda,(y)` (indirect),y, `iny, rts, php,` etc.
-- Branch labels: `:-` marks a backward target, `-branch bne,` jumps to it; `+branch beq,` starts a forward branch that `:+` resolves. Resolve nested forward branches innermost-first.
-- Calling the KERNAL from a code word: save the stack pointer around it — `txa, pha, ... jsr, ... pla, tax,` — ROM calls clobber X and much of zeropage.
+- Mnemonics end in a comma, operand first: `5 lda,#` (immediate), `$9F20 lda,` (absolute/zp), `lsb lda,x` / `lda,y` (indexed), `w lda,(y)` / `lda,(x)` (indirect), `asl,a` (accumulator), `w (jmp),` (indirect jump), `iny, rts, php,` … NMOS set only — no `bra,`/`stz,`/`phx,`.
+- Branch labels: `:- ( -- addr )` marks a backward target consumed by `-branch <bcc,>`; `+branch <bcc,>` opens a forward branch resolved by `:+`. Nest forwards LIFO (innermost `:+` first).
+- A VARIABLE / CREATEd name used as an operand assembles its data address: `ticks inc,`.
+- KERNAL calls: `txa, pha, … $ffd2 jsr, … pla, tax,` — ROM clobbers X and zeropage.
 
 ---
 
