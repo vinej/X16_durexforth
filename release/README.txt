@@ -12,6 +12,10 @@ Core cartridge - smaller; load libraries from the SD card as you need them:
 
 Both cartridges carry on-demand modules in ROM (no SD card needed for them):
     NEEDS GRAPHIC      ( 320x240x256 bitmap drawing - HELP GRAPHIC )
+    NEEDS ADVGFX       ( clipping, flood fill, FX copy, rotozoom - after GRAPHIC )
+    NEEDS ADVANCED     ( PRNG, sin/cos/atan2/lerp, rings, ZX0 - HELP ADVANCED )
+    NEEDS ADVSND       ( PSG envelopes, background PCM, ADPCM )
+    NEEDS BMX          ( BMX image load/save )
     NEEDS FLOAT        ( floating point + literals  - HELP FLOAT )
     NEEDS FLOATX       ( extended float set, after FLOAT )
     NEEDS FILE         ( ANS file words + CD/DIR    - HELP FILE )
@@ -20,7 +24,9 @@ Both cartridges carry on-demand modules in ROM (no SD card needed for them):
     NEEDS EXTRAS       ( structures, FORGET, DEFER@ .. - HELP STRUCTURE )
 
 As a RAM program (compiles the core from the card on boot):
-    x16emu -prg durexforth.prg -sdcard sdcard.img
+    x16emu -prg durexforth.prg -run -sdcard sdcard.img
+  NEEDS is cartridge-only; on the prg use INCLUDE GRAPHIC etc. - the same
+  modules ship on the card as source files.
 
 sdcard.img also carries the HELP pages (HELP, or HELP STRING for one topic)
 and is checked at boot for an AUTORUN file to include automatically.

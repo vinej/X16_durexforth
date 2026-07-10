@@ -138,6 +138,10 @@ Core cartridge - smaller; load libraries from the SD card as needed:
 
 Both cartridges carry on-demand modules in ROM (no SD card needed for them):
     NEEDS GRAPHIC      ( 320x240x256 bitmap drawing - HELP GRAPHIC )
+    NEEDS ADVGFX       ( clipping, flood fill, FX copy, rotozoom - after GRAPHIC )
+    NEEDS ADVANCED     ( PRNG, sin/cos/atan2/lerp, rings, ZX0 - HELP ADVANCED )
+    NEEDS ADVSND       ( PSG envelopes, background PCM, ADPCM )
+    NEEDS BMX          ( BMX image load/save )
     NEEDS FLOAT        ( floating point + literals  - HELP FLOAT )
     NEEDS FLOATX       ( extended float set, after FLOAT )
     NEEDS FILE         ( ANS file words + CD/DIR    - HELP FILE )
@@ -146,7 +150,9 @@ Both cartridges carry on-demand modules in ROM (no SD card needed for them):
     NEEDS EXTRAS       ( structures, FORGET, DEFER@ .. - HELP STRUCTURE )
 
 As a RAM program (compiles the core from the card on boot):
-    x16emu -prg durexforth.prg -sdcard sdcard.img
+    x16emu -prg durexforth.prg -run -sdcard sdcard.img
+  NEEDS is cartridge-only; on the prg use INCLUDE GRAPHIC etc. - the same
+  modules ship on the card as source files.
 
 sdcard.img also carries the HELP pages (HELP / HELP STRING ...) and is checked
 at boot for an AUTORUN file to include automatically.
@@ -155,6 +161,10 @@ sdcard.img is a FAT32 image with the Forth source libraries and is where EDIT
 saves and INCLUDE loads your own .FS files.  On real hardware write it to an
 SD card and load a .crt via a cartridge (or run the .prg).
 "@ | Out-File -Encoding ascii release\README.txt
+
+Write-Host "==> cartridge boot verification (typed NEEDS smoke test)"
+& powershell -ExecutionPolicy Bypass -File "$PSScriptRoot\test-carts.ps1"
+if ($LASTEXITCODE -ne 0) { throw "cartridge smoke test FAILED" }
 
 Write-Host "==> release\ ready:"
 Get-ChildItem release | Format-Table Name, Length -AutoSize
