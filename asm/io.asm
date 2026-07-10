@@ -211,6 +211,15 @@ TIB_PTR
 TIB_SIZE
     !word 0
 
+    +BACKLINK "#tib", 4
+    ; ( -- addr ) the cell holding the number of characters in TIB
+    dex
+    lda #<TIB_SIZE
+    sta LSB, x
+    lda #>TIB_SIZE
+    sta MSB, x
+    rts
+
     +BACKLINK "source-id", 9
 SOURCE_ID_LSB = * + 1
 SOURCE_ID_MSB = * + 3

@@ -131,16 +131,24 @@ def wipe_all():
                 free_chain(first)
         wr(off, b'\xE5' + e[1:])           # tombstone (covers LFN entries too)
 
+def extend_root():
+    """Grow the root directory by one (zeroed) cluster."""
+    ch = chain(rootclus)
+    c = alloc_cluster()
+    fat_set(ch[-1], c)
+
 def find_free_run(n):
-    """Find n consecutive free root-directory slots."""
-    run = []
-    for off, e in root_entries():
-        if e[0] in (0x00, 0xE5):
-            run.append(off)
-            if len(run) == n:
-                return run
-        else:
-            run = []
+    """Find n consecutive free root-directory slots (growing root if full)."""
+    for _ in range(2):
+        run = []
+        for off, e in root_entries():
+            if e[0] in (0x00, 0xE5):
+                run.append(off)
+                if len(run) == n:
+                    return run
+            else:
+                run = []
+        extend_root()
     raise RuntimeError("no run of %d free directory slots" % n)
 
 def add_file(fn, data):

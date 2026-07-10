@@ -37,6 +37,9 @@ page parse-name testgraphic included
 page parse-name testromdisk included
 page parse-name testfloat included
 page parse-name testfile included
+page parse-name teststring included
+page parse-name testsystem included
+page parse-name testextras included
 
 \ include-mechanism smoke test (loads the file "1")
 :noname s" include 1 2" evaluate

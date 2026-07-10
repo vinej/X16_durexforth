@@ -15,7 +15,7 @@
 [ ] FREE ( -- ) - print the free dictionary space. On the wide-dictionary builds
   it shows the near + far (RAM-bank) pools; on all other builds, the single
   low-RAM pool (the UNUSED value).
-
+[x] WORDS ( -- ) - list the words in the context wordlist.
 --- durexForth ---
 [x] NOTFOUND ( caddr u -- ) - handler for an unrecognised word (prints the name + "?").
 [x] IOABORT ( ioresult -- ) - if ioresult is nonzero, print a message and THROW -37.

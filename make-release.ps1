@@ -29,7 +29,7 @@ $IMG      = "release\sdcard.img"
 
 $CORE = @("wordlist","labels","doloop","debug","ls","require","open","accept","asm","turnkey")
 $OPT  = @("compat","see","io","dos","rnd","timer","audio","loadsave","vramdisk","romdisk")
-$MODS = @("graphic","float","floatx","file")    # forth\mod\ on-demand modules -> cart ROM bank 40+
+$MODS = @("graphic","float","floatx","file","string","system","extras")    # forth\mod\ on-demand modules -> cart ROM bank 40+
 
 New-Item -ItemType Directory -Force build, release | Out-Null
 
@@ -139,6 +139,9 @@ Both cartridges carry on-demand modules in ROM (no SD card needed for them):
     NEEDS FLOAT        ( floating point + literals  - HELP FLOAT )
     NEEDS FLOATX       ( extended float set, after FLOAT )
     NEEDS FILE         ( ANS file words + CD/DIR    - HELP FILE )
+    NEEDS STRING       ( S\" C" COMPARE STR VAL ...  - HELP STRING )
+    NEEDS SYSTEM       ( SYSCALL USR RANDOM BYE ...  - HELP SYSTEM )
+    NEEDS EXTRAS       ( structures, FORGET, DEFER@ .. - HELP STRUCTURE )
 
 As a RAM program (compiles the core from the card on boot):
     x16emu -prg durexforth.prg -sdcard sdcard.img

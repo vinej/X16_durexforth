@@ -15,6 +15,9 @@ Both cartridges carry on-demand modules in ROM (no SD card needed for them):
     NEEDS FLOAT        ( floating point + literals  - HELP FLOAT )
     NEEDS FLOATX       ( extended float set, after FLOAT )
     NEEDS FILE         ( ANS file words + CD/DIR    - HELP FILE )
+    NEEDS STRING       ( S\" C" COMPARE STR VAL ...  - HELP STRING )
+    NEEDS SYSTEM       ( SYSCALL USR RANDOM BYE ...  - HELP SYSTEM )
+    NEEDS EXTRAS       ( structures, FORGET, DEFER@ .. - HELP STRUCTURE )
 
 As a RAM program (compiles the core from the card on boot):
     x16emu -prg durexforth.prg -sdcard sdcard.img
