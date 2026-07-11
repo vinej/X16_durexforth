@@ -258,7 +258,7 @@ dot: `100000.` — and print with `D.`.
 | `DNEGATE` `DABS` | negate / absolute value |
 | `M+ ( d n -- d )` | add a single to a double |
 | `D2*` `D2/` | double / halve |
-| `D=` `D<` `DU<` `D0=` `D0<` | comparisons (returns a flag) |
+| `D=` `D<>` `D<` `D>` `DU<` `DU>` `D0=` `D0<>` `D0<` `D0>` | comparisons (returns a flag) |
 | `DMAX` `DMIN` | larger / smaller |
 | `D.` `D.R` | print (D.R right-justified in a width) |
 
@@ -273,8 +273,8 @@ A double **d** is two cells: low half pushed first, high half on top. **ud** = u
 - `M+ ( d n -- d' )` — add a signed single to a double.
 - `DNEGATE ( d -- -d )` / `DABS ( d -- ud )` — negate / absolute value.
 - `D2* ( d -- d*2 )` / `D2/ ( d -- d/2 )` — shift; D2/ is arithmetic.
-- `D= D< ( d1 d2 -- flag )` — equality / signed compare. `DU< ( ud1 ud2 -- flag )` — unsigned compare.
-- `D0= D0< ( d -- flag )` — test against zero.
+- `D= D<> D< D> ( d1 d2 -- flag )` — equality / signed compare. `DU< DU> ( ud1 ud2 -- flag )` — unsigned compare.
+- `D0= D0<> D0< D0> ( d -- flag )` — test against zero.
 - `DMAX DMIN ( d1 d2 -- d )` — larger / smaller.
 - `D. ( d -- )` / `D.R ( d width -- )` — print; **width**: minimum field width, right-justified, space-padded.
 
@@ -1603,7 +1603,7 @@ FVARIABLE TEMP   98.6 TEMP F!   TEMP F@ F.
 ```
 
 Word set: `F+ F- F* F/ FSQRT FNEGATE FABS FPOW FMAX FMIN FSIN FCOS FTAN
-FATAN FLN FEXP F0= F0< F< FDROP FDUP FSWAP FOVER FNIP FDEPTH FCLEAR F.
+FATAN FLN FEXP F= F<> F< F> F0= F0<> F0< F0> FDROP FDUP FSWAP FOVER FNIP FDEPTH FCLEAR F.
 F>S FVARIABLE FCONSTANT FLITERAL ISQRT`.
 FLOATX adds `FPI FROT FSINCOS FLOG FALOG FASIN FACOS FATAN2 FSINH FCOSH
 FTANH F~` and the BASIC aliases `SQR SIN COS TAN ATN LOG EXP`.
@@ -1625,11 +1625,11 @@ Floats use their own stack, shown as `( F: ... )`. Values are 5-byte MFLPT, ≈9
 - `FMAX FMIN ( F: a b -- r )` — pick one.
 - `FSIN FCOS FTAN FATAN ( F: r -- r' )` — radians.
 - `FLN FEXP ( F: r -- r' )` — natural log (r > 0) / e^r.
-- `F0= F0< ( -- flag ) ( F: r -- )` / `F< ( -- flag ) ( F: a b -- )` — comparisons (consume floats, flag on the data stack).
+- `F0= F0<> F0< F0> ( -- flag ) ( F: r -- )` / `F= F<> F< F> ( -- flag ) ( F: a b -- )` — comparisons (consume floats, flag on the data stack; equality is exact — prefer F~ for computed values).
 - `FDROP FDUP FSWAP FOVER FNIP` — float-stack shuffles. `FDEPTH ( -- n )` / `FCLEAR ( -- )`.
 - `F. ( F: r -- )` — print. `FVARIABLE FCONSTANT ( "name" )` — 5-byte variable / constant. `FLITERAL` — compile the top float inline.
 - `ISQRT ( u -- n )` — integer square root, no float stack involved.
-- FLOATX adds: `FPI FPI2 FLN10 FROT FSINCOS FLOG FALOG FLNP1 FEXPM1 FSINH FCOSH FTANH FASIN FACOS FATAN2 F~ FLOAT+ FLOATS FALIGN FALIGNED` and BASIC aliases `SQR SIN COS TAN ATN LOG EXP`.
+- FLOATX adds: `FPI FPI2 FLN10 FROT FSINCOS FLOG FALOG FLNP1 FEXPM1 FSINH FCOSH FTANH FASIN FACOS FATAN2 F~ FVALUE FLOAT+ FLOATS FALIGN FALIGNED` and BASIC aliases `SQR SIN COS TAN ATN LOG EXP`. `FVALUE ( F: r "name" -- )` is a float VALUE — read by name, write with `TO` (which keeps working for VALUE/2VALUE).
 
 ---
 

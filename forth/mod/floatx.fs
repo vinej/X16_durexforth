@@ -64,6 +64,21 @@ fvariable f~tol
   then
   f- fabs f~tol f@ f< ;
 
+\ --- FVALUE: a float VALUE, rewritten with TO ---------------------------------
+\   3 S>F FVALUE SPEED   SPEED F.   2 S>F TO SPEED
+: fvalue ( "name" -- ) ( F: r -- ) create here 5 allot f! does> f@ ;
+0 s>f fvalue (fv)
+' (fv) 3 + @ constant (fvdoes)     \ the does>-code pointer all FVALUEs share
+\ Extend core TO: created words dispatch on that pointer - FVALUE stores from
+\ the float stack, anything else keeps the 2VALUE behavior. VALUEs unchanged.
+: to ' dup c@ $20 = if
+    dup 3 + @ (fvdoes) = if
+      5 + state c@ if postpone literal postpone f! exit then f! exit then
+    5 + state c@ if postpone literal postpone 2! exit then 2!
+  else
+    1+ state c@ if postpone literal postpone (to) exit then (to)
+  then ; immediate
+
 \ --- BASIC-style aliases ( F: r -- f(r) ):   2 S>F SQR F.  ->  1.41421356 ----
 : sqr   fsqrt  ;
 : sin   fsin   ;

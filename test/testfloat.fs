@@ -37,6 +37,19 @@ T{ 0 s>f f0= -> -1 }T
 T{ 3 s>f f0= -> 0 }T
 T{ 2 s>f 3 s>f f< -> -1 }T
 T{ 3 s>f 2 s>f f< -> 0 }T
+T{ 3 s>f 3 s>f f= -> -1 }T
+T{ 2 s>f 3 s>f f= -> 0 }T
+T{ 2 s>f 3 s>f f<> -> -1 }T
+T{ 3 s>f 3 s>f f<> -> 0 }T
+T{ 3 s>f 2 s>f f> -> -1 }T
+T{ 2 s>f 3 s>f f> -> 0 }T
+T{ 3 s>f 3 s>f f> -> 0 }T
+T{ 3 s>f f0<> -> -1 }T
+T{ 0 s>f f0<> -> 0 }T
+T{ 3 s>f f0> -> -1 }T
+T{ 0 s>f f0> -> 0 }T
+T{ 3 s>f fnegate f0> -> 0 }T
+T{ 0 s>f fnegate f0> -> 0 }T  \ negated zero is not positive
 T{ -5 s>f fabs f>s -> 5 }T
 T{ 2 s>f 3 s>f fmax f>s -> 3 }T
 T{ 2 s>f 3 s>f fmin f>s -> 2 }T
@@ -46,6 +59,20 @@ fvariable fv1
 T{ 42 s>f fv1 f! fv1 f@ f>s -> 42 }T
 7 s>f fconstant fc7
 T{ fc7 f>s -> 7 }T
+
+cr .( testfloat: fvalue + extended to ) cr
+3 s>f fvalue fvx
+T{ fvx f>s -> 3 }T
+T{ 7 s>f to fvx fvx f>s -> 7 }T           \ interpreted TO
+: (fvset) s>f to fvx ;
+T{ 9 (fvset) fvx f>s -> 9 }T              \ compiled TO
+T{ fdepth -> 0 }T
+5 value tv1
+T{ 6 to tv1 tv1 -> 6 }T                   \ VALUE path still works
+: (tvset) to tv1 ;
+T{ 8 (tvset) tv1 -> 8 }T
+11 22 2value tv2
+T{ 33 44 to tv2 tv2 -> 33 44 }T           \ 2VALUE path still works
 
 cr .( testfloat: >FLOAT parsing ) cr
 T{ s" 3" >float -> -1 }T      T{ f>s -> 3 }T

@@ -1,7 +1,8 @@
 === DOUBLE - Double-cell math ===
 
-Doubles occupy two stack cells (low then high). Type a double literal with a
-    dot: 10.
+Doubles occupy two stack cells (low then high). There is no double literal:
+push both cells yourself (10. is 10 0, -1. is -1 -1) or use 2CONSTANT /
+2VALUE. With FLOAT loaded, a trailing dot (10.) parses as a float instead.
 
 [x] S>D ( n -- d ) - single to double (sign-extend). 5 S>D D.  ->  5
 [x] D>S ( d -- n ) - double to single (drop high cell).
@@ -13,10 +14,15 @@ Doubles occupy two stack cells (low then high). Type a double literal with a
 [x] D2* ( d -- 2d ) - double a double.
 [x] D2/ ( d -- d/2 ) - halve a double (arithmetic).
 [x] D= ( d1 d2 -- flag ) - doubles equal?
+[x] D<> ( d1 d2 -- flag ) - doubles not equal?
 [x] D< ( d1 d2 -- flag ) - signed double less-than.
+[x] D> ( d1 d2 -- flag ) - signed double greater-than.
 [x] DU< ( ud1 ud2 -- flag ) - unsigned double less-than.
+[x] DU> ( ud1 ud2 -- flag ) - unsigned double greater-than.
 [x] D0= ( d -- flag ) - double is zero?
+[x] D0<> ( d -- flag ) - double is non-zero?
 [x] D0< ( d -- flag ) - double is negative?
+[x] D0> ( d -- flag ) - double is positive?
 [x] DMAX ( d1 d2 -- d ) - larger double.
 [x] DMIN ( d1 d2 -- d ) - smaller double.
 [x] D. ( -- d) - display

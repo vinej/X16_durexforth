@@ -70,6 +70,11 @@ create ftmp 5 allot
 : f0< ( -- flag ) ( F: r -- )
   fsp @ c@ 0<>  fsp @ 1+ c@ 128 and 0<> and  fdrop ;
 : f<  ( -- flag ) ( F: r1 r2 -- ) f- f0< ;
+: f=  ( -- flag ) ( F: r1 r2 -- ) f- f0= ;
+: f<> ( -- flag ) ( F: r1 r2 -- ) f= 0= ;
+: f>  ( -- flag ) ( F: r1 r2 -- ) fswap f< ;
+: f0<> ( -- flag ) ( F: r -- ) f0= 0= ;
+: f0> ( -- flag ) ( F: r -- ) fnegate f0< ;
 : fmax ( F: a b -- max ) fover fover f< if fnip else fdrop then ;
 : fmin ( F: a b -- min ) fover fover f< if fdrop else fnip then ;
 

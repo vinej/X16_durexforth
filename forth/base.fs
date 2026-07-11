@@ -204,6 +204,11 @@ inx, inx, rts, end-code
 : d= ( d1 d2 -- flag ) d- d0= ;
 : d< ( d1 d2 -- flag ) rot 2dup = if 2drop u< else 2swap 2drop swap < then ;
 : du< ( ud1 ud2 -- flag ) rot 2dup = if 2drop u< else 2swap 2drop swap u< then ;
+: d<> ( d1 d2 -- flag ) d= 0= ;
+: d> ( d1 d2 -- flag ) 2swap d< ;
+: du> ( ud1 ud2 -- flag ) 2swap du< ;
+: d0<> ( d -- flag ) or 0<> ;
+: d0> ( d -- flag ) 0 0 2swap d< ;
 : dmax ( d1 d2 -- d ) 2over 2over d< if 2swap then 2drop ;
 : dmin ( d1 d2 -- d ) 2over 2over d< 0= if 2swap then 2drop ;
 : d. ( d -- ) tuck dabs <# #s rot sign #> type space ;

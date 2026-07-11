@@ -40,6 +40,22 @@ T{ 2 3 m* -> 6 0 }T
 T{ -1 1 m* -> -1 -1 }T
 T{ 1000 1000 um* -> 16960 15 }T
 
+cr .( testx16: double comparisons ) cr
+T{ 10 0 20 0 d<> -> true }T
+T{ 10 0 10 0 d<> -> false }T
+T{ 20 0 10 0 d> -> true }T
+T{ 10 0 20 0 d> -> false }T
+T{ 10 0 10 0 d> -> false }T
+T{ -1 -1 1 0 d> -> false }T
+T{ -1 -1 1 0 du> -> true }T   \ -1. unsigned is the max double
+T{ 1 0 2 0 du> -> false }T
+T{ 0 0 d0<> -> false }T
+T{ 5 0 d0<> -> true }T
+T{ 5 0 d0> -> true }T
+T{ 0 0 d0> -> false }T
+T{ -5 -1 d0> -> false }T
+T{ 0 -32768 d0> -> false }T   \ most negative double
+
 cr .( testx16: strings ) cr
 T{ s" hello" nip -> 5 }T
 T{ s" hello" drop c@ -> 104 }T
