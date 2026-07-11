@@ -52,6 +52,21 @@ T{ 21 x2 -> 42 }T
 T{ 100 x2 -> 200 }T
 T{ -3 x2 -> -6 }T
 
+cr .( testx16: synonym ) cr
+: sy-sq dup * ;
+synonym sy-square sy-sq                          \ colon word
+T{ 3 sy-square -> 9 }T
+T{ ' sy-square ' sy-sq = -> true }T              \ same xt, no wrapper
+synonym sy-2dup 2dup                             \ code word
+T{ 1 2 sy-2dup -> 1 2 1 2 }T
+synonym sy-if if  synonym sy-then then           \ immediate words stay immediate
+: sy-choose sy-if 111 else 222 sy-then ;
+T{ -1 sy-choose -> 111 }T
+T{ 0 sy-choose -> 222 }T
+synonym sy-tick '                                \ parsing word
+T{ sy-tick sy-sq ' sy-sq = -> true }T
+T{ :noname s" synonym sy-x nosuchword" evaluate ; catch -> -13 }T
+
 cr .( testx16: keymap ) cr
 s" de-de" keymap  s" abc/x16" keymap             \ set + restore boot default
 T{ :noname s" xx-xx" keymap ; catch -> -13 }T    \ unknown layout -> "xx-xx?"

@@ -18,6 +18,8 @@ examples and when-to-use notes - especially CREATE ... DOES> and VALUE/TO.
 [x] BUFFER: ( n "name" -- ) - create an n-byte buffer word. 80 BUFFER: LINE
 [x] DOES> ( -- ) - give a CREATEd word run-time behaviour. : CONST CREATE , DOES>
     @ ;
+[x] SYNONYM ( "new" "old" -- ) - make new an alias of old (same xt, immediacy
+    kept). SYNONYM PRINT .
 [x] TO ( n "name" -- ) - store into a VALUE. 7 TO V
 [x] IS ( xt "name" -- ) - set a DEFER's action. ' CR IS EMITTER
 [x] ACTION-OF ( "name" -- xt ) - get a DEFER's current action.

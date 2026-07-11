@@ -649,6 +649,7 @@ callbacks: `:NONAME 1 SCORE +! ; IRQ`.
 - `DOES> ( -- )` — ends the building part of a defining word; what follows runs when the *created* word executes, with its data address on the stack.
 - `DEFER ( "name" -- )` — a word whose action is assigned later. `IS ( xt "name" -- )` — assign it. `ACTION-OF ( "name" -- xt )` — read it.
 - `DEFER@ ( xt1 -- xt2 )` / `DEFER! ( xt2 xt1 -- )` — the same via execution tokens. **xt1**: the deferred word; **xt2**: its action.
+- `SYNONYM ( "new" "old" -- )` — make **new** an alias of **old**: same xt, zero overhead, immediacy preserved. `SYNONYM PRINT .`
 
 ---
 

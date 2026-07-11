@@ -145,6 +145,16 @@ latest >xt jmp,
 here latest >xt 1+ (to)
 2 allot ;
 
+( true alias: a new header whose xt
+  points at the old word's code, with
+  the flag bits copied, so immediacy
+  and compile semantics carry over. )
+: synonym ( "newname" "oldname" -- )
+header parse-name 2dup find-name
+?dup 0= if notfound then nip nip
+dup >xt latest dup c@ $1f and + 1+ !
+c@ $c0 and latest dup c@ rot or swap c! ;
+
 ( double / buffer defining words - DEFINING.TXT )
 : 2variable ( "name" -- ) variable 2 allot ;
 : buffer: ( n "name" -- ) create allot ;

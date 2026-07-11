@@ -1,8 +1,8 @@
 \ ADVGFX - clipping, flood fill, fast VRAM copy (ADVANCED.TXT).
 \ Load GRAPHIC first:  cart NEEDS GRAPHIC NEEDS ADVGFX,
 \ card INCLUDE GRAPHIC INCLUDE ADVGFX (uses its BXY>BA / BPSET / BHLINE).
-\ Ported from C:\quartus\projects\x16_library (util/clip.asm, gfx/bitmap.asm
-\ gfx_flood, gfx/verafx.asm fx_copy).
+\ Ported from C:\quartus\projects\x16_library (util/clip.asm, gfx/bitmap.asm,
+\ gfx/verafx.asm).
 
 decimal
 
