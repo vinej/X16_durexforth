@@ -164,7 +164,24 @@ INTERPRET
     ; handler compiles an inline literal (jsr + data bytes).
     lda STATE
     sta curr_word_no_tail_call_elimination
-    jmp (NOTFOUND_VEC)
+
+    ; "xxx" string literals: an undefined token starting with '"' goes
+    ; through its own vector ( caddr u ), so it composes with 'NOTFOUND
+    ; hooks (FLOAT literals). Default = the notfound error; base.fs
+    ; installs the (quote) handler. Defined words still win: this path
+    ; only runs after FIND_NAME failed.
+    ; ROLLBACK: replace this block with "jmp (NOTFOUND_VEC)" and delete
+    ; QUOTE_VEC + 'quote below (plus the (quote) block in base.fs).
+    lda LSB+1, x
+    sta W
+    lda MSB+1, x
+    sta W + 1
+    ldy #0
+    lda (W), y
+    cmp #$22 ; '"'
+    bne +
+    jmp (QUOTE_VEC)
++   jmp (NOTFOUND_VEC)
 
     ; yep, it's a number...
 .was_number
@@ -221,6 +238,17 @@ NOTFOUND_VEC ; interpreter not-found hook (RAM cell, see INTERPRET)
     lda #<NOTFOUND_VEC
     sta LSB, x
     lda #>NOTFOUND_VEC
+    sta MSB, x
+    rts
+
+QUOTE_VEC ; "xxx" string-literal hook (RAM cell, see INTERPRET)
+    !word print_word_not_found_error
+
+    +BACKLINK "'quote", 6
+    dex
+    lda #<QUOTE_VEC
+    sta LSB, x
+    lda #>QUOTE_VEC
     sta MSB, x
     rts
 

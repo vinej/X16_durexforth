@@ -501,6 +501,7 @@ S" ABC" S" ABD" COMPARE . \ -1  (-1/0/1 like strcmp)
 A string is **( c-addr u )** — address + length. A *counted* string is one byte of length followed by the text.
 
 - `S" ( "text" -- addr len )` — string literal. Interpreted: transient buffer; compiled: stored in the definition.
+- `"text"` — the same without the space after the quote: `"hello world" TYPE`. Defined words always win over this syntax; an unterminated string errors like an unknown word.
 - `S\" ( "text" -- addr len )` — same with escapes: `\n \t \" \\ \e \xAB \m` (CR+LF).
 - `." ( "text" -- )` — compile-time: print the text when the word runs.
 - `C" ( "text" -- c-addr )` — counted-string literal.

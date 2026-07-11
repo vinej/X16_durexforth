@@ -14,6 +14,9 @@ decimal
 \ tolerance for approximate compares: 1/10000
 : ftol ( F: -- r ) 1 s>f 10000 s>f f/ ;
 
+cr .( testfloat: quote literals coexist with the 'notfound float hook ) cr
+T{ "xy" nip -> 2 }T
+
 cr .( testfloat: int conversion + arithmetic ) cr
 T{ 5 s>f f>s -> 5 }T
 T{ 1000 s>f f>s -> 1000 }T

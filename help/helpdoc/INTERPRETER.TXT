@@ -12,6 +12,12 @@
 [ ] RESTORE-INPUT ( xn..x1 n -- flag ) - restore a saved input position.
 [ ] CLOSE-SOURCE ( -- ) - close the current file input source (used by nested
     INCLUDE).
+[x] "xxx" ( -- addr len ) - string literal, same semantics as S" but no space
+    after the quote: "hello world" TYPE. Only kicks in for undefined tokens
+    (defined words always win); an unterminated string errors like an
+    unknown word. Handler cell: 'QUOTE (like 'NOTFOUND).
+[x] 'QUOTE ( -- addr ) - the "xxx" string-literal hook cell; the kernel routes
+    undefined tokens starting with " through it.
 [x] STATE ( -- addr ) - variable: non-zero while compiling.
 [x] ( ( "ccc)" -- ) - inline comment up to ). ( n -- n*2 )
 [x] \ ( "line" -- ) - comment to end of line.

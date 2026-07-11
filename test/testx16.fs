@@ -83,6 +83,22 @@ synonym sy-tick '                                \ parsing word
 T{ sy-tick sy-sq ' sy-sq = -> true }T
 T{ :noname s" synonym sy-x nosuchword" evaluate ; catch -> -13 }T
 
+cr .( testx16: quote string literals ) cr
+T{ "abc" nip -> 3 }T
+T{ "abc" drop c@ -> 97 }T
+T{ "" nip -> 0 }T                                \ empty string
+T{ "hello world" nip -> 11 }T                    \ spans tokens
+T{ "hello world" drop 6 + c@ -> 119 }T           \ ...contents intact ('w')
+T{ "a  b" nip -> 4 }T                            \ interior spaces preserved
+T{ " x" nip -> 2 }T                              \ lone " token, leading space
+: qs1 "worlds" ;                                 \ compile state -> inline copy
+T{ qs1 nip -> 6 }T
+T{ qs1 drop c@ -> 119 }T
+: "w" 42 ;
+T{ "w" -> 42 }T                                  \ defined words win over syntax
+T{ :noname 34 pad c! 97 pad 1+ c! 98 pad 2+ c!
+   pad 3 evaluate ; catch -> -13 }T              \ unterminated "ab -> error
+
 cr .( testx16: keymap ) cr
 s" de-de" keymap  s" abc/x16" keymap             \ set + restore boot default
 T{ :noname s" xx-xx" keymap ; catch -> -13 }T    \ unknown layout -> "xx-xx?"

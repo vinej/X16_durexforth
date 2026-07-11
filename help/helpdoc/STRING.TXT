@@ -6,6 +6,10 @@ Strings built at run time (interpreted S\" and C", CHR, RPT) live in PAD and
 stay valid until the next such call (max 189 characters).
 
 [x] S" ( "ccc\"" -- addr len ) - a string literal. S" hello" TYPE  ->  hello
+[x] "xxx" ( -- addr len ) - string literal, same semantics as S" but no space
+    after the quote: "hello world" TYPE. Only kicks in for undefined tokens
+    (defined words always win); an unterminated string errors like an
+    unknown word. Handler cell: 'QUOTE (see INTERPRETER).
 [x] S\" ( "ccc\"" -- addr len ) - string literal with escapes: \n \t \" \\ \e etc.
 [x] ." ( "ccc\"" -- ) - print a literal string when the word runs. : HI ." hello"
     ;

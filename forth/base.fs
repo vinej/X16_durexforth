@@ -56,6 +56,27 @@ then ; immediate
 : ." postpone s" postpone type
 ; immediate
 : .( ')' parse type ; immediate
+
+( "xxx" string literals, same semantics
+  as S". The kernel routes undefined
+  tokens starting with " through the
+  'QUOTE vector - defined words win, so
+  S" ." ABORT" etc. are unaffected. An
+  unterminated string errors like an
+  unknown word. ROLLBACK: delete this
+  block + the QUOTE_VEC check in
+  interpreter.asm. )
+: (qlit) ( ca u -- ca u | )
+state @ if postpone lits
+dup c, tuck here swap move allot then ;
+: (quote) ( ca u -- ca u | )
+dup 1 > if 2dup + 1- c@ '"' = if
+1- 1- swap 1+ swap (qlit) exit
+then then
+'"' parse + source + over = if
+drop notfound then
+rot 1+ tuck - rot drop (qlit) ;
+' (quote) 'quote !
 .( compile base..)
 
 : case 0 ; immediate
