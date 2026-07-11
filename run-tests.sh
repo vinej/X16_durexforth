@@ -26,7 +26,7 @@ FORTH="wordlist labels doloop debug ls require open accept help asm turnkey \
 # test AND written to the card so `include <mod>` works too.
 MODS="graphic float floatx file string system extras advanced advgfx bmx advsnd"
 # Test-suite files.
-TESTS="tester testcore testcoreplus testcoreext testexception testx16 testvideo testsprite testtile testpalfx testinput testcoreadd testaudio testbank testvramdisk testloadsave testgraphic testromdisk testfloat testfile teststring testsystem testextras testadv testadvgfx testbmx testadvsnd test 1"
+TESTS="tester testcore testcoreplus testcoreext testexception testx16 testdouble testvideo testsprite testtile testpalfx testinput testcoreadd testaudio testbank testvramdisk testloadsave testgraphic testromdisk testfloat testfile teststring testsystem testextras testadv testadvgfx testbmx testadvsnd test 1"
 
 echo "==> assembling kernel"
 mkdir -p build

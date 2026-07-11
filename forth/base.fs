@@ -219,7 +219,7 @@ inx, inx, rts, end-code
 : d>s ( d -- n ) drop ;
 : d- ( d1 d2 -- d3 ) dnegate d+ ;
 : d2* ( d -- 2d ) 2dup d+ ;
-: d2/ ( d -- d/2 ) dup >r 2/ swap 1 rshift r> 1 and 15 lshift or swap ;
+: d2/ ( d -- d/2 ) dup >r 2/ swap 1 rshift r> 1 and $f lshift or swap ;
 : d0= ( d -- flag ) or 0= ;
 : d0< ( d -- flag ) nip 0< ;
 : d= ( d1 d2 -- flag ) d- d0= ;
@@ -244,6 +244,37 @@ swap over um* 2swap um* >r -rot r> 0 2swap d+ ;
 dup 2 pick xor 3 pick xor >r             \ combined sign -> R
 abs >r abs >r dabs                       \ |n2| |n1| on R, |d| on stack
 r> ut* r> ut/ r> ?dnegate ;
+
+( "12." double literals - DOUBLE.TXT:
+  digits with a trailing dot push a
+  double, in the current BASE, "-" ok.
+  Installed in 'NOTFOUND; FLOAT chains
+  trailing-dot tokens back here, so 12.
+  stays a double and 12.12 a float.
+  ROLLBACK: delete this block and make
+  the float.fs literal hook fall back
+  to plain notfound again. )
+: (dig) ( c -- n -1 | 0 )
+dup '0' '9' 1+ within if '0' -
+else dup 'a' 'z' 1+ within if 'a' - $a +
+else dup 'A' 'Z' 1+ within if 'A' - $a +
+else drop 0 exit then then then
+dup base @ u< dup 0= if nip then ;
+: (dnum) ( ca u -- d | ca u <throws> )
+dup 2 < if notfound then
+2dup + 1- c@ '.' <> if notfound then
+2dup 1- over c@ '-' = dup >r if 1 /string then
+dup 0= if 2drop r> drop notfound then
+0 0 2swap ( ca u ud ca' u' )
+begin dup while
+over c@ (dig) 0= if
+2drop 2drop r> drop notfound then
+>r 2swap base @ ud* r> m+ 2swap
+1 /string repeat 2drop
+r> if dnegate then 2swap 2drop
+state @ if swap
+postpone literal postpone literal then ;
+' (dnum) 'notfound !
 
 ( number output: right-justified fields + helpers - NUMERIC.TXT )
 : holds ( addr u -- ) begin dup while 1- 2dup + c@ hold repeat 2drop ;

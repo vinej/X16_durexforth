@@ -17,6 +17,11 @@ decimal
 cr .( testfloat: quote literals coexist with the 'notfound float hook ) cr
 T{ "xy" nip -> 2 }T
 
+cr .( testfloat: trailing dot stays a double, dot+digits is a float ) cr
+T{ 12. -> 12 0 }T
+T{ 12.0 f>s -> 12 }T
+T{ -3. d0< -> true }T
+
 cr .( testfloat: int conversion + arithmetic ) cr
 T{ 5 s>f f>s -> 5 }T
 T{ 1000 s>f f>s -> 1000 }T
@@ -95,6 +100,24 @@ T{ 4 s>f fx15 f>s -> 6 }T
 : fnop ;                          \ plain colon word (not immediate)
 : f15 fnop 1.5 ;                  \ trailing float literal = the TCE trap
 T{ f15 2 s>f f* f>s -> 3 }T
+\ T{ }T compares the data stack only, so float results are reduced to a
+\ flag: F= for binary-exact values (.5 .25 .75 2.5 ...), F~ otherwise.
+T{ 12.12 12.12 f+ 24.24 ftol f~ -> -1 }T
+T{ 0.5 0.25 f+ 0.75 f= -> -1 }T
+T{ 12.5 12.5 f+ 25.0 f= -> -1 }T
+T{ 100.5 0.5 f- 100.0 f= -> -1 }T
+T{ 2.5 4.0 f* 10.0 f= -> -1 }T
+T{ 10.0 2.5 f/ 4.0 f= -> -1 }T
+T{ -2.5 fabs 2.5 f= -> -1 }T
+T{ 1.5e2 150 s>f f= -> -1 }T      \ exponent forms
+T{ -25e-1 fnegate 2.5 f= -> -1 }T
+T{ .5 .5 f+ 1 s>f f= -> -1 }T     \ leading-dot literal
+T{ 12.12 12.13 f< -> -1 }T
+T{ 12.12 fdup f= -> -1 }T
+T{ 3.5 3.25 fmax 3.5 f= -> -1 }T
+: fsum25 12.5 12.5 f+ ;           \ compiled literals in arithmetic
+T{ fsum25 25.0 f= -> -1 }T
+T{ fdepth -> 0 }T
 
 cr .( testfloat: transcendentals, tolerance 1e-4 ) cr
 T{ 16 s>f fsqrt 4 s>f ftol f~ -> -1 }T

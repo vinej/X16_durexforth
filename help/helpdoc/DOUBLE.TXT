@@ -1,8 +1,9 @@
 === DOUBLE - Double-cell math ===
 
-Doubles occupy two stack cells (low then high). There is no double literal:
-push both cells yourself (10. is 10 0, -1. is -1 -1) or use 2CONSTANT /
-2VALUE. With FLOAT loaded, a trailing dot (10.) parses as a float instead.
+Doubles occupy two stack cells (low then high). Type a double literal with a
+trailing dot, in the current BASE: 12. -> 12 0, -12. -> -12 -1, HEX FF.
+Digits after the dot are a FLOAT literal once that module is loaded (12.12);
+a trailing dot stays a double.
 
 [x] S>D ( n -- d ) - single to double (sign-extend). 5 S>D D.  ->  5
 [x] D>S ( d -- n ) - double to single (drop high cell).

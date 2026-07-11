@@ -17,6 +17,20 @@ T{ hex ABCD decimal -> 43981 }T
 T{ $ff -> 255 }T
 T{ $-1a -> -26 }T
 
+cr .( testx16: double literals - trailing dot ) cr
+T{ 12. -> 12 0 }T
+T{ -12. -> -12 -1 }T
+T{ 0. -> 0 0 }T
+T{ 65536. -> 0 1 }T                       \ 32-bit accumulation
+T{ 65537. -> 1 1 }T
+T{ 100000. 250000. d+ 350000. d= -> true }T   \ the userguide example
+T{ hex ff. decimal -> 255 0 }T            \ respects BASE
+: dlit12 12. ;
+T{ dlit12 -> 12 0 }T                      \ compiles as two literals
+T{ :noname s" 12.." evaluate ; catch -> -13 }T
+T{ :noname s" -." evaluate ; catch -> -13 }T
+T{ :noname s" dup." evaluate ; catch -> -13 }T   \ non-digits never execute
+
 cr .( testx16: deep zeropage stack ) cr
 T{ 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 -> 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 }T
 T{ 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 + + + + + + + + + + + + + + -> 120 }T
@@ -98,6 +112,10 @@ T{ qs1 drop c@ -> 119 }T
 T{ "w" -> 42 }T                                  \ defined words win over syntax
 T{ :noname 34 pad c! 97 pad 1+ c! 98 pad 2+ c!
    pad 3 evaluate ; catch -> -13 }T              \ unterminated "ab -> error
+
+cr .( testx16: type underflow guard ) cr
+T{ :noname s" type" evaluate ; catch -> -4 }T      \ empty stack
+T{ :noname s" 12 type" evaluate ; catch -> -4 }T   \ one cell only
 
 cr .( testx16: keymap ) cr
 s" de-de" keymap  s" abc/x16" keymap             \ set + restore boot default

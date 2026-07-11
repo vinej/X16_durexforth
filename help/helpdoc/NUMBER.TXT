@@ -1,5 +1,9 @@
 === NUMBER - Number and text parsing ===
 
+Literals: $FF hex, %101 binary, #10 decimal, 'c' char code, and a trailing
+dot makes a double-cell literal in the current base (12. -> 12 0, see
+DOUBLE). With FLOAT loaded, 12.12 / 1E6 are float literals.
+
 [x] >NUMBER ( ud addr len -- ud' addr' len' ) - accumulate digits into a double
     until a non-digit.
 [x] WORD ( c -- c-addr ) - parse the next c-delimited word into a counted string.

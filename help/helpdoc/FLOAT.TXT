@@ -5,7 +5,9 @@ Floats live on a separate FP stack ( F: ... ), stored as 5-byte MFLPT values
 Cart: NEEDS FLOAT (then NEEDS FLOATX for the extended set).
 SD card: INCLUDE FLOAT (then INCLUDE FLOATX).
 After loading, float literals (1.5, -2.5E-2, 1E6) work in the interpreter
-and compile inside definitions.
+and compile inside definitions. A trailing dot is NOT a float: 12. stays a
+double-cell literal (see DOUBLE) - floats need a digit after the dot or an
+exponent.
 Domain errors (F/ by zero, FLN of a negative) are not trapped - avoid them.
 
 [x] S>F    ( n -- ) ( F: -- r )   signed integer -> float.  5 S>F F. -> 5

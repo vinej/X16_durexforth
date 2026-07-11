@@ -139,9 +139,14 @@ variable >fa  variable >fn  variable >fok  variable >fdp  variable >fng
   >fng @ if fnegate then  -1 ;
 
 \ --- float literals: hook the interpreter's not-found vector -------------------
+\ Chains to the handler it replaced (the core's (dnum) double-literal parser),
+\ and hands trailing-dot tokens straight back to it: 12. stays a DOUBLE,
+\ 12.0 / 12.12 / 1e5 are floats.
+'notfound @ constant (fnf)
 : (flit) ( F: -- r )  r> 1+ dup 5 + 1- >r  f@ ;
 : fliteral ( F: r -- ) ['] (flit) compile,  here 5 allot f! ;
 : (fnum) ( c-addr u -- )
+  2dup + 1- c@ '.' = if (fnf) execute exit then
   2dup >float if 2drop state @ if fliteral then exit then
-  notfound ;
+  (fnf) execute ;
 ' (fnum) 'notfound !

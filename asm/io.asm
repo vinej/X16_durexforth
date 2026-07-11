@@ -23,7 +23,19 @@ CR ; ( -- )
 
     +BACKLINK "type", 4
 TYPE ; ( caddr u -- )
-    lda #0 ; quote mode off
+    ; Guard: TYPE needs two cells. A bare TYPE, or "12 TYPE", would spray
+    ; garbage-length memory to the screen before the interpreter's
+    ; post-word underflow check could fire; refuse up front instead.
+    ; (Content can't be validated - Forth is untyped - only the depth.
+    ; X = X_INIT is empty, X_INIT-1 has one item; deeper wraps below.)
+    cpx #X_INIT
+    beq .type_underflow
+    cpx #X_INIT-1
+    bne +
+.type_underflow
+    lda #-4 ; throws "stack" (stack underflow)
+    jmp throw_a
++   lda #0 ; quote mode off
     sta $381 ; X16 qtsw
 -   lda LSB,x
     ora MSB,x

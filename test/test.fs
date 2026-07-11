@@ -23,6 +23,7 @@ page parse-name testcoreext included
 ---coretests---
 page parse-name testexception included
 page parse-name testx16 included
+page parse-name testdouble included
 page parse-name testvideo included
 page parse-name testsprite included
 page parse-name testtile included
