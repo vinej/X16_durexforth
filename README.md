@@ -1,4 +1,4 @@
-# durexforth (Commander X16 port)
+# durexforth (Commander X16 port) Version X16_V1
 
 A Commander X16 port of durexForth, a fast, [Forth 2012](http://forth-standard.org/standard/words) core-compatible Forth for 6502-family machines.
 
